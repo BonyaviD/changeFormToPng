@@ -161,7 +161,7 @@
         display: flex;
         justify-content: end;
         align-items: center;
-        gap: 180px;
+        gap: 240px;
         padding: 0 100px;
         position: relative;
         top: -100px;
@@ -173,7 +173,7 @@
       }
       .title-down {
         position: relative;
-        top: -70px;
+        top: -90px;
         /* background-color: red; */
       }
 
@@ -184,6 +184,12 @@
       .real-content {
         position: relative;
          top: -100px;
+   
+        }
+
+        .title-content {
+        position: relative;
+         top: -25px;
    
         }
     </style>
@@ -249,29 +255,29 @@
         <div class="dore-header">
           <div class="flex-col">
             <img style="width: 80px; background-color: inherit" src="./assets/ghazadaroo.png" alt="" />
-            <p style="font-size: 20px" class="title-up">سازمان غذا و دارو</p>
-            <p class="title-down">اداره کل امور دارو و مواد تحت کنترل</p>
+            <p style="font-size: 25px" class="title-up">سازمان غذا و دارو</p>
+            <p style="font-size: 25px" class="title-down">اداره کل امور دارو و مواد تحت کنترل</p>
           </div>
           <img src="./assets/jomhori.jpg" alt="" style="width: 200px; position: relative; top: -50px" />
           <div class="flex-col">
             <img src="./assets/logo.png" style="width: 60px" alt="" />
-            <p style="font-size: 20px" class="title-up">سازمان غذا و دارو</p>
-            <p class="title-down">مرکز تحقیقات حلال جهموری اسلامی ایران</p>
+            <p style="font-size: 25px" class="title-up">سازمان غذا و دارو</p>
+            <p style="font-size: 25px" class="title-down">مرکز تحقیقات حلال جهموری اسلامی ایران</p>
           </div>
         </div>
 
         <div class="flex-end">
           <div>
             <p style="font-size: 25px" class="font-bold">بسم تعالی</p>
-            <p style="font-size: 25px" class="font-bold">گواهی پایان دوره آموزشی</p>
+            <p style="font-size: 25px" class="font-bold title-content">گواهی پایان دوره آموزشی</p>
           </div>
           <div>
             <p id="resultCourseCode" style="font-size: 25px">شماره:</p>
-            <p id="resultIssueDate" style="font-size: 25px">تاریخ صدور:</p>
+            <p id="resultIssueDate" class="title-content" style="font-size: 25px">تاریخ صدور:</p>
           </div>
         </div>
 
-        <div class="real-content" style="font-size: 25px; padding: 0 100px">
+        <div class="real-content" style="font-size: 30px; padding: 0 100px">
           بدینوسیله گواهی می شود سرکار
           <span id="resultGender"></span>
           <span id="resultFullName"></span>
