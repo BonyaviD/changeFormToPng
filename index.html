@@ -189,13 +189,13 @@
 
         .title-content {
         position: relative;
-         top: -25px;
+         top: -30px;
    
         }
     </style>
   </head>
   <body>
-    <div id="formContainer" style="display: block">
+    <div id="formContainer" style="display: block; font-family: sans-serif;">
       <h1>فرم ثبت اطلاعات دوره</h1>
 
       <form id="courseForm">
@@ -229,15 +229,26 @@
           <input type="text" name="doreTime" />
         </label>
 
-        <label class="nastalight-font"
+        <label
           >تاریخ صدور:
           <input data-jdp placeholder="انتخاب کنید" name="issueDate" />
         </label>
+
+        <label
+        >تاریخ برگزاری:
+        <input data-jdp placeholder="انتخاب کنید" name="bargozariDate" />
+      </label>
 
         <label>جنسیت:</label>
         <div class="radio-group">
           <label><input type="radio" name="gender" value="آقای" required /> مرد</label>
           <label><input type="radio" name="gender" value="خانم" required /> زن</label>
+        </div>
+
+        <label>وضعیت:</label>
+        <div class="radio-group">
+          <label><input type="radio" name="status" value="حضوری" required />حضوری</label>
+          <label><input type="radio" name="status" value="غیرحضوری" required />غیرحضوری</label>
         </div>
 
         <div class="checkbox">
@@ -267,9 +278,9 @@
         </div>
 
         <div class="flex-end">
-          <div>
+          <div style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
             <p style="font-size: 25px" class="font-bold">بسم تعالی</p>
-            <p style="font-size: 25px" class="font-bold title-content">گواهی پایان دوره آموزشی</p>
+            <p style="font-size: 25px;" class="font-bold title-content">گواهی پایان دوره آموزشی</p>
           </div>
           <div>
             <p id="resultCourseCode" style="font-size: 25px">شماره:</p>
@@ -280,20 +291,23 @@
         <div class="real-content" style="font-size: 30px; padding: 0 100px">
           بدینوسیله گواهی می شود سرکار
           <span id="resultGender"></span>
-          <span id="resultFullName"></span>
+          <span id="resultFullName" style="font-weight: bold;"></span>
           فرزند
-          <span id="resultFatherName"></span>
+          <span id="resultFatherName" style="font-weight: bold;"></span>
           دارای کد ملی
-          <span id="resultNationalId"></span>
+          <span id="resultNationalId" style="font-weight: bold;"></span>
           در دوره آموزشی
-          <span id="resultCourseTitle"></span>
-          که به صورت حضوری و به
+          <span id="resultCourseTitle" style="font-weight: bold;"></span>
+          که در تاریخ
+          <span id="resultBargozariDate"></span>
+          به صورت 
+          <span id="resultStatus"></span>
           <span id="resultDoreTime"></span>
-          برگزار گردیده است شرکت و دوره را با موفقیت به پایان رسانیده است.
+          برگزار گردیده شرکت و دوره را با موفقیت به پایان رسانیده است.
         </div>
 
         <div class="flex-end ">
-          <div style="font-size: 30px; position: relative;">
+          <div style="font-size: 30px; position: relative; margin-left: 20px;">
             <img width="350px" src="./assets/sign.PNG" style="transform: rotate(60deg); position: absolute; left: -30px; top: -50px;" alt="">
             <p>دکتر حسین رستگار</p>
             <p>رئیس مرکز تحقیقات حلال جمهوری اسلامی ایران</p>
@@ -301,9 +315,6 @@
           <div></div>
         </div>
       </div>
-      <!-- <h2 class="nastalight-font">اطلاعات ثبت‌شده</h2>
-      <p id="resultHeldDate"></p>  -->
-      <!-- <p id="resultSignCount"></p> -->
     </div>
 
     <!-- <form onsubmit="handleSubmit(event)">
@@ -334,7 +345,9 @@
         const nationalId = formData.get("nationalId");
         const doreTime = formData.get("doreTime");
         const issueDate = formData.get("issueDate");
+        const bargozariDate = formData.get("bargozariDate");
         const gender = formData.get("gender");
+        const status = formData.get("status");
     
         // پر کردن خروجی
         document.getElementById("resultCourseTitle").innerText = `${courseTitle}`;
@@ -342,9 +355,11 @@
         document.getElementById("resultFullName").innerText = `${fullName}`;
         document.getElementById("resultFatherName").innerText = `${fatherName}`;
         document.getElementById("resultNationalId").innerText = `${toPersianDigits(nationalId)}`;
-        document.getElementById("resultDoreTime").innerText = `${toPersianDigits(doreTime)}`;
+        document.getElementById("resultDoreTime").innerText = `و به مدت ${toPersianDigits(doreTime)} `;
         document.getElementById("resultIssueDate").innerText = `تاریخ صدور: ${toPersianDigits(issueDate)}`;
+        document.getElementById("resultBargozariDate").innerText = `${toPersianDigits(bargozariDate)}`;
         document.getElementById("resultGender").innerText = `${gender}`;
+        document.getElementById("resultStatus").innerText = `${status}`;
     
         function toPersianDigits(str) {
           return str.toString().replace(/\d/g, (d) => "۰۱۲۳۴۵۶۷۸۹"[d]);
