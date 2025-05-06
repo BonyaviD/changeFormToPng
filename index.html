@@ -355,7 +355,7 @@
         document.getElementById("resultFullName").innerText = `${fullName}`;
         document.getElementById("resultFatherName").innerText = `${fatherName}`;
         document.getElementById("resultNationalId").innerText = `${toPersianDigits(nationalId)}`;
-        document.getElementById("resultDoreTime").innerText = `و به مدت ${toPersianDigits(doreTime)} `;
+        document.getElementById("resultDoreTime").innerText = doreTime ? `و به مدت ${toPersianDigits(doreTime)}` : "";
         document.getElementById("resultIssueDate").innerText = `تاریخ صدور: ${toPersianDigits(issueDate)}`;
         document.getElementById("resultBargozariDate").innerText = `${toPersianDigits(bargozariDate)}`;
         document.getElementById("resultGender").innerText = `${gender}`;
