@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="fa">
+  <head>
+    <meta charset="UTF-8" />
+    <script src="./dist/jalalidatepicker.js"></script>
+    <script src="./libs/html2canvas.min.js"></script>
+    <link rel="stylesheet" href="./dist/jalalidatepicker.css" />
+    <title>فرم اطلاعات دوره</title>
+    <style>
+@font-face {
+  font-family: "IranNastaliq";
+  src: url("./assets/IranNastaliq.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+
+      #capture {
+      padding: 20px;
+      border: 1px solid #ccc;
+      width: 300px;
+      font-size: 14px;
+      font-family: "IranNastaliq", serif;
+    }
+      .nastalight-font {
+        font-family: "IranNastaliq", sans-serif;
+        font-feature-settings: "ss01";
+
+        /* line-height: normal; */
+      }
+
+      body {
+        font-family: "IranNastaliq", serif;
+        direction: rtl;
+        background-color: #f4f4f4;
+        padding: 20px;
+      }
+
+      h1,
+      h2 {
+        text-align: center;
+      }
+
+      form {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        max-width: 600px;
+        margin: auto;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      label {
+        display: block;
+        margin-bottom: 10px;
+      }
+
+      input[type="text"],
+      input[type="date"],
+      select {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        margin-top: 4px;
+      }
+
+      .radio-group {
+        display: flex;
+        gap: 20px;
+        margin-top: 5px;
+      }
+
+      .checkbox {
+        margin-top: 10px;
+      }
+
+      button {
+        background-color: #007bff;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        margin-top: 15px;
+      }
+
+      /* #resultContainer {
+        max-width: 600px;
+        margin: 30px auto;
+        background: #fff;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      #resultContainer p {
+        margin: 10px 0;
+        line-height: 1.6;
+      } */
+
+      .modal {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        margin: auto;
+        background: #fff;
+        box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+        transition: margin-top 0.3s ease, height 0.3s ease;
+        transform: translateZ(0);
+        box-sizing: border-box;
+        z-index: 999;
+        border-radius: 3px;
+        max-width: 600px;
+        display: block;
+        height: 400px;
+        overflow: scroll;
+      }
+
+      .dore-result {
+        position: relative;
+        width: 1150px;
+        height: 820px;
+        margin: 0 auto;
+      }
+
+      .dore-content {
+        position: absolute;
+        left: 58px;
+        top: 64px;
+        width: 1030px;
+        height: 700px;
+        background-color: white;
+      }
+
+      .dore-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 20px 100px;
+        /* background-color: rgba(255, 0, 0, 0.315); */
+      }
+      .flex-col {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        /* gap: 2px; */
+      }
+      .flex-end {
+        display: flex;
+        justify-content: end;
+        align-items: center;
+        gap: 150px;
+        padding: 0 100px;
+        position: relative;
+        top: -100px;
+      }
+      .title-up {
+        position: relative;
+        top: -20px;
+        /* background-color: red; */
+      }
+      .title-down {
+        position: relative;
+        top: -70px;
+        /* background-color: red; */
+      }
+
+      .font-bold {
+        font-weight: bold;
+      }
+
+      .real-content {
+        position: relative;
+        top: -100px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="formContainer" style="display: block">
+      <h1>فرم ثبت اطلاعات دوره</h1>
+
+      <form id="courseForm">
+        <label
+          >عنوان دوره:
+          <input type="text" name="courseTitle" />
+        </label>
+
+        <label
+          >کد دوره: (شماره)
+          <input type="text" name="courseCode" />
+        </label>
+
+        <label
+          >نام و نام خانوادگی
+          <input type="text" name="fullName" />
+        </label>
+
+        <label
+          >نام پدر:
+          <input type="text" name="fatherName" />
+        </label>
+
+        <label
+          >کد ملی:
+          <input type="text" name="nationalId" />
+        </label>
+
+        <label
+          >زمان دوره:
+          <input type="text" name="doreTime" />
+        </label>
+
+        <label class="nastalight-font"
+          >تاریخ صدور:
+          <input data-jdp placeholder="انتخاب کنید" name="issueDate" />
+        </label>
+
+        <label>جنسیت:</label>
+        <div class="radio-group">
+          <label><input type="radio" name="gender" value="آقای" required /> مرد</label>
+          <label><input type="radio" name="gender" value="خانم" required /> زن</label>
+        </div>
+
+        <div class="checkbox">
+          <label><input type="checkbox" name="dualSign" /> آیا دو امضا باشد؟</label>
+        </div>
+
+        <button type="submit">ارسال</button>
+      </form>
+    </div>
+    <!-- const resultContainer = document.getElementById("resultContainer"); -->
+
+    <div id="resultContainer" class="dore-result nastalight-font" style="display: none">
+      <img src="./assets/background.png" alt="" style="object-fit: contain; width: 100%; height: 100%" />
+      <div class="dore-content">
+        <div class="dore-header">
+          <div class="flex-col">
+            <img style="width: 80px; background-color: inherit" src="./assets/ghazadaroo.png" alt="" />
+            <p style="font-size: 20px" class="title-up">سازمان غذا و دارو</p>
+            <p class="title-down">اداره کل امور دارو و مواد تحت کنترل</p>
+          </div>
+          <img src="./assets/jomhori.jpg" alt="" style="width: 200px; position: relative; top: -50px" />
+          <div class="flex-col">
+            <img src="./assets/logo.png" style="width: 60px" alt="" />
+            <p style="font-size: 20px" class="title-up">سازمان غذا و دارو</p>
+            <p class="title-down">مرکز تحقیقات حلال جهموری اسلامی ایران</p>
+          </div>
+        </div>
+
+        <div class="flex-end">
+          <div>
+            <p style="font-size: 20px" class="font-bold">بسم تعالی</p>
+            <p style="font-size: 20px" class="font-bold">گواهی پایان دوره آموزشی</p>
+          </div>
+          <div>
+            <p id="resultCourseCode" style="font-size: 25px">شماره:</p>
+            <p id="resultIssueDate" style="font-size: 25px">تاریخ صدور:</p>
+          </div>
+        </div>
+
+        <div class="real-content" style="font-size: 25px; padding: 0 100px">
+          بدینوسیله گواهی می شود سرکار
+          <span id="resultGender"></span>
+          <span id="resultFullName"></span>
+          فرزند
+          <span id="resultFatherName"></span>
+          دارای کد ملی
+          <span id="resultNationalId"></span>
+          در دوره آموزشی
+          <span id="resultCourseTitle"></span>
+          که به صورت حضوری و به
+          <span id="resultDoreTime"></span>
+          برگزار گردیده است شرکت و دوره را با موفقیت به پایان رسانیده است.
+        </div>
+
+        <div class="flex-end ">
+          <div style="font-size: 30px; position: relative;">
+            <img width="350px" src="./assets/sign.PNG" style="transform: rotate(60deg); position: absolute; left: -30px; top: -50px;" alt="">
+            <p>دکتر حسین رستگار</p>
+            <p>رئیس مرکز تحقیقات حلال جمهوری اسلامی ایران</p>
+          </div>
+          <div></div>
+        </div>
+      </div>
+      <!-- <h2 class="nastalight-font">اطلاعات ثبت‌شده</h2>
+      <p id="resultHeldDate"></p>  -->
+      <!-- <p id="resultSignCount"></p> -->
+    </div>
+
+    <!-- <form onsubmit="handleSubmit(event)">
+      <input type="text" id="name" placeholder="نام" required><br><br>
+      <input type="email" id="email" placeholder="ایمیل" required><br><br>
+      <button type="submit">تبدیل به عکس</button>
+    </form> -->
+  
+    <!-- <div id="capture" style="display: none;">
+      <h3 id="preview-name"></h3>
+      <p id="preview-email"></p>
+    </div> -->
+  
+    
+    <script>
+      const form = document.getElementById("courseForm");
+      const formContainer = document.getElementById("formContainer");
+      const resultContainer = document.getElementById("resultContainer");
+    
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+    
+        const formData = new FormData(form);
+        const courseTitle = formData.get("courseTitle");
+        const courseCode = formData.get("courseCode");
+        const fullName = formData.get("fullName");
+        const fatherName = formData.get("fatherName");
+        const nationalId = formData.get("nationalId");
+        const doreTime = formData.get("doreTime");
+        const issueDate = formData.get("issueDate");
+        const gender = formData.get("gender");
+    
+        // پر کردن خروجی
+        document.getElementById("resultCourseTitle").innerText = `${courseTitle}`;
+        document.getElementById("resultCourseCode").innerText = `شماره: ${toPersianDigits(courseCode)}`;
+        document.getElementById("resultFullName").innerText = `${fullName}`;
+        document.getElementById("resultFatherName").innerText = `${fatherName}`;
+        document.getElementById("resultNationalId").innerText = `${toPersianDigits(nationalId)}`;
+        document.getElementById("resultDoreTime").innerText = `${toPersianDigits(doreTime)}`;
+        document.getElementById("resultIssueDate").innerText = `تاریخ صدور: ${toPersianDigits(issueDate)}`;
+        document.getElementById("resultGender").innerText = `${gender}`;
+    
+        function toPersianDigits(str) {
+          return str.toString().replace(/\d/g, (d) => "۰۱۲۳۴۵۶۷۸۹"[d]);
+        }
+    
+        // نمایش موقت برای گرفتن عکس
+        resultContainer.style.display = "flex";
+    
+        // صبر کن تا DOM آپدیت شه بعد اسکرین‌شات بگیر
+        setTimeout(() => {
+          html2canvas(resultContainer).then(canvas => {
+            const link = document.createElement('a');
+            link.download = 'certificate.png';
+            link.href = canvas.toDataURL();
+            link.click();
+    
+            // بعد از عکس گرفتن، مخفی کن
+            resultContainer.style.display = "none";
+          });
+        }, 300); // کمی زمان برای رندر بده
+      });
+    
+      jalaliDatepicker.startWatch({
+        minDate: "attr",
+        maxDate: "attr",
+        date: true,
+        hasSecond: true,
+        hideAfterChange: false,
+        autoHide: true,
+        showTodayBtn: true,
+        showEmptyBtn: true,
+        topSpace: 10,
+        bottomSpace: 30,
+        overflowSpace: -10,
+        dayRendering(opt, input) {
+          return {
+            isHollyDay: opt.day == 1,
+          };
+        },
+      });
+    </script>
+    
+    
+  </body>
+</html>
