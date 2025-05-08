@@ -7,29 +7,27 @@
     <link rel="stylesheet" href="./dist/jalalidatepicker.css" />
     <title>فرم اطلاعات دوره</title>
     <style>
+      @font-face {
+        font-family: "IranNastaliq";
+        src: url("/changeFormToPng/Public/IranNastaliq.ttf") format("ttf");
+        font-weight: normal;
+        font-style: normal;
+      }
 
-@font-face {
-  font-family: "IranNastaliq";
-  src: url("/changeFormToPng/Public/IranNastaliq.ttf") format("ttf");
-  font-weight: normal;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: "IranNastaliq";
-  src: url("/changeFormToPng/assets/IranNastaliq.ttf") format("truetype");
-  font-weight: normal;
-  font-style: normal;
-}
-
+      @font-face {
+        font-family: "IranNastaliq";
+        src: url("/changeFormToPng/assets/IranNastaliq.ttf") format("truetype");
+        font-weight: normal;
+        font-style: normal;
+      }
 
       #capture {
-      padding: 20px;
-      border: 1px solid #ccc;
-      width: 300px;
-      font-size: 14px;
-      font-family: "IranNastaliq", serif;
-    }
+        padding: 20px;
+        border: 1px solid #ccc;
+        width: 300px;
+        font-size: 14px;
+        font-family: "IranNastaliq", serif;
+      }
       .nastalight-font {
         font-family: "IranNastaliq", sans-serif;
         font-feature-settings: "ss01";
@@ -164,7 +162,7 @@
         gap: 260px;
         padding: 0 100px;
         position: relative;
-        top: -100px;
+        top: -150px;
       }
       .title-up {
         position: relative;
@@ -183,19 +181,39 @@
 
       .real-content {
         position: relative;
-         top: -100px;
-   
-        }
+        top: -140px;
+      }
 
-        .title-content {
+      .title-content {
         position: relative;
-         top: -30px;
-   
-        }
+        top: -30px;
+      }
+
+
+
+      .solo-sign {
+        position: relative;
+        top: -120px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 30px;
+      }
+      .dual-sign {
+        width: calc(100% - 160px);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 80px;
+        position: relative;
+        top: -120px;
+        font-size: 30px;
+        background-color: red;
+      }
     </style>
   </head>
   <body>
-    <div id="formContainer" style="display: block; font-family: sans-serif;">
+    <div id="formContainer" style="display: block; font-family: sans-serif">
       <h1>فرم ثبت اطلاعات دوره</h1>
 
       <form id="courseForm">
@@ -235,9 +253,9 @@
         </label>
 
         <label
-        >تاریخ برگزاری:
-        <input data-jdp placeholder="انتخاب کنید" name="bargozariDate" />
-      </label>
+          >تاریخ برگزاری:
+          <input data-jdp placeholder="انتخاب کنید" name="bargozariDate" />
+        </label>
 
         <label>جنسیت:</label>
         <div class="radio-group">
@@ -278,9 +296,9 @@
         </div>
 
         <div class="flex-end">
-          <div style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+          <div style="display: flex; flex-direction: column; align-items: center; justify-content: center">
             <p style="font-size: 25px" class="font-bold">بسم تعالی</p>
-            <p style="font-size: 25px;" class="font-bold title-content">گواهی پایان دوره آموزشی</p>
+            <p style="font-size: 25px" class="font-bold title-content">گواهی پایان دوره آموزشی</p>
           </div>
           <div>
             <p id="resultCourseCode" style="font-size: 25px">شماره:</p>
@@ -291,28 +309,36 @@
         <div class="real-content" style="font-size: 30px; padding: 0 100px">
           بدینوسیله گواهی می شود
           <span id="resultGender"></span>
-          <span id="resultFullName" style="font-weight: bold;"></span>
+          <span id="resultFullName" style="font-weight: bold"></span>
           فرزند
-          <span id="resultFatherName" style="font-weight: bold;"></span>
+          <span id="resultFatherName" style="font-weight: bold"></span>
           دارای کد ملی
-          <span id="resultNationalId" style="font-weight: bold;"></span>
+          <span id="resultNationalId" style="font-weight: bold"></span>
           در دوره آموزشی
-          <span id="resultCourseTitle" style="font-weight: bold;"></span>
+          <span id="resultCourseTitle" style="font-weight: bold"></span>
           که در تاریخ
           <span id="resultBargozariDate"></span>
-          به صورت 
+          به صورت
           <span id="resultStatus"></span>
           <span id="resultDoreTime"></span>
           برگزار گردیده شرکت و دوره را با موفقیت به پایان رسانیده است.
         </div>
 
-        <div class="flex-end ">
-          <div style="font-size: 30px; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; margin-left: 40px;">
-            <img width="350px" src="./assets/sign.PNG" style="transform: rotate(60deg); position: absolute; left: -30px; top: -50px;" alt="">
+        <div class="dual-sign" id="section-true" style="display: none">
+          <div>امضای دوم</div>
+          <div style="position: relative;"> 
+            <img width="350px" src="./assets/sign.PNG" style="transform: rotate(60deg); position: absolute; left: -30px; top: -50px" alt="" />
             <p>دکتر حسین رستگار</p>
             <p>رئیس مرکز تحقیقات حلال جمهوری اسلامی ایران</p>
           </div>
-          <div></div>
+        </div>
+
+        <div id="section-false" class="solo-sign">
+          <div style="position: relative;"> 
+            <img width="350px" src="./assets/sign.PNG" style="transform: rotate(60deg); position: absolute; left: -30px; top: -50px" alt="" />
+            <p>دکتر حسین رستگار</p>
+            <p>رئیس مرکز تحقیقات حلال جمهوری اسلامی ایران</p>
+          </div>
         </div>
       </div>
     </div>
@@ -322,21 +348,20 @@
       <input type="email" id="email" placeholder="ایمیل" required><br><br>
       <button type="submit">تبدیل به عکس</button>
     </form> -->
-  
+
     <!-- <div id="capture" style="display: none;">
       <h3 id="preview-name"></h3>
       <p id="preview-email"></p>
     </div> -->
-  
-    
+
     <script>
       const form = document.getElementById("courseForm");
       const formContainer = document.getElementById("formContainer");
       const resultContainer = document.getElementById("resultContainer");
-    
+
       form.addEventListener("submit", function (e) {
         e.preventDefault();
-    
+
         const formData = new FormData(form);
         const courseTitle = formData.get("courseTitle");
         const courseCode = formData.get("courseCode");
@@ -348,7 +373,18 @@
         const bargozariDate = formData.get("bargozariDate");
         const gender = formData.get("gender");
         const status = formData.get("status");
-    
+        const dualSign = formData.get("dualSign") === "on"; // اگر چک باکس تیک خورده بود true میشه
+        const sectionTrue = document.getElementById("section-true");
+        const sectionFalse = document.getElementById("section-false");
+
+        if (dualSign) {
+          sectionTrue.style.display = "flex";
+          sectionFalse.style.display = "none";
+        } else {
+          sectionTrue.style.display = "none";
+          sectionFalse.style.display = "flex";
+        }
+
         // پر کردن خروجی
         document.getElementById("resultCourseTitle").innerText = `${courseTitle}`;
         document.getElementById("resultCourseCode").innerText = `شماره: ${toPersianDigits(courseCode)}`;
@@ -360,28 +396,28 @@
         document.getElementById("resultBargozariDate").innerText = `${toPersianDigits(bargozariDate)}`;
         document.getElementById("resultGender").innerText = `${gender}`;
         document.getElementById("resultStatus").innerText = `${status}`;
-    
+
         function toPersianDigits(str) {
           return str.toString().replace(/\d/g, (d) => "۰۱۲۳۴۵۶۷۸۹"[d]);
         }
-    
+
         // نمایش موقت برای گرفتن عکس
         resultContainer.style.display = "flex";
-    
+
         // صبر کن تا DOM آپدیت شه بعد اسکرین‌شات بگیر
         setTimeout(() => {
-          html2canvas(resultContainer).then(canvas => {
-            const link = document.createElement('a');
-            link.download = 'certificate.png';
+          html2canvas(resultContainer).then((canvas) => {
+            const link = document.createElement("a");
+            link.download = "certificate.png";
             link.href = canvas.toDataURL();
             link.click();
-    
+
             // بعد از عکس گرفتن، مخفی کن
             resultContainer.style.display = "none";
           });
         }, 300); // کمی زمان برای رندر بده
       });
-    
+
       jalaliDatepicker.startWatch({
         minDate: "attr",
         maxDate: "attr",
@@ -401,7 +437,5 @@
         },
       });
     </script>
-    
-    
   </body>
 </html>
