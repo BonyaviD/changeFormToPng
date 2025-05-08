@@ -15,11 +15,25 @@
       }
 
       @font-face {
+        font-family: "SaneJaleh";
+        src: url("/changeFormToPng/Public/SaneJaleh.ttf") format("ttf");
+        font-weight: normal;
+        font-style: normal;
+      }
+
+      @font-face {
+        font-family: "Hamishe";
+        src: url("/changeFormToPng/Public/Hamishe.ttf") format("ttf");
+        font-weight: normal;
+        font-style: normal;
+      }
+      /* 
+      @font-face {
         font-family: "IranNastaliq";
         src: url("/changeFormToPng/assets/IranNastaliq.ttf") format("truetype");
         font-weight: normal;
         font-style: normal;
-      }
+      } */
 
       #capture {
         padding: 20px;
@@ -36,7 +50,8 @@
       }
 
       body {
-        font-family: "IranNastaliq", serif;
+        /* font-family: "IranNastaliq", serif; */
+        font-family: "SaneJaleh", sans-serif;
         direction: rtl;
         background-color: #f4f4f4;
         /* padding: 20px; */
@@ -174,6 +189,7 @@
         font-family: sans-serif;
         direction: rtl;
         border: 2px solid #d3d6f3;
+        
       }
 
       #formContainer h1 {
@@ -181,6 +197,13 @@
         text-align: center;
         color: #312f8f;
         margin-bottom: 25px;
+        
+      }
+
+      input::placeholder {
+        font-size: 16px;
+        color: #cab2d1;
+        /* font-family: "Hamishe"; */
       }
 
       #formContainer form label {
@@ -197,10 +220,16 @@
         margin-top: 5px;
         border: 1.5px solid #b4b9ec;
         border-radius: 8px;
-        font-size: 14px;
+        font-size: 16px;
         box-sizing: border-box;
         transition: all 0.3s ease;
         background: #fff;
+        font-family: "hamishe", sans-serif;
+        font-weight: 500;
+      }
+
+      #formContainer form input[type="text"] {
+        color: rgb(170, 85, 170);
       }
 
       #formContainer form input:focus {
@@ -253,32 +282,32 @@
       <form id="courseForm">
         <label
           >عنوان دوره:
-          <input type="text" name="courseTitle" placeholder="اسم دوره را وارد کنید" />
+          <input type="text" name="courseTitle" placeholder="عنوان دوره را وارد کنید" />
         </label>
 
         <label
-          >کد دوره: (شماره)
-          <input type="text" name="courseCode" placeholder="کد دوره را وارد کنید"/>
+          >کد دوره:
+          <input type="text" name="courseCode" placeholder="کد دوره را وارد کنید" />
         </label>
 
         <label
-          >نام و نام خانوادگی
-          <input type="text" name="fullName" placeholder="نام و نام خانوادگی را وارد کنید"/>
+          >نام و نام خانوادگی:
+          <input type="text" name="fullName" placeholder="نام و نام خانوادگی را وارد کنید" />
         </label>
 
         <label
           >نام پدر:
-          <input type="text" name="fatherName" placeholder="نام پدر را وارد کنید"/>
+          <input type="text" name="fatherName" placeholder="نام پدر را وارد کنید" />
         </label>
 
         <label
           >کد ملی:
-          <input type="text" name="nationalId" placeholder="کد ملی را وارد کنید"/>
+          <input type="text" name="nationalId" placeholder="کد ملی را وارد کنید" />
         </label>
 
         <label
           >زمان دوره:
-          <input type="text" name="doreTime" placeholder="زمان دوره را با واحد وارد کنید. برای مثال: 6 دقیقه، 9 ساعت، 5 روز، ..."/>
+          <input type="text" name="doreTime" placeholder="زمان دوره را با واحد وارد کنید. برای مثال: 6 دقیقه، 9 ساعت، 5 روز، ..." />
         </label>
 
         <label
