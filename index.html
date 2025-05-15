@@ -27,13 +27,13 @@
         font-weight: normal;
         font-style: normal;
       }
-      /* 
+
       @font-face {
         font-family: "IranNastaliq";
         src: url("/changeFormToPng/assets/IranNastaliq.ttf") format("truetype");
         font-weight: normal;
         font-style: normal;
-      } */
+      }
 
       #capture {
         padding: 20px;
@@ -152,7 +152,8 @@
 
       .real-content {
         position: relative;
-        top: -140px;
+        top: -330px;
+        background-color: #4b4992;
       }
 
       .title-content {
@@ -162,7 +163,7 @@
 
       .solo-sign {
         position: relative;
-        top: -120px;
+        top: -340px;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -175,7 +176,7 @@
         align-items: center;
         padding: 0 80px;
         position: relative;
-        top: -120px;
+        top: -340px;
         font-size: 30px;
       }
 
@@ -189,7 +190,6 @@
         font-family: sans-serif;
         direction: rtl;
         border: 2px solid #d3d6f3;
-        
       }
 
       #formContainer h1 {
@@ -197,7 +197,6 @@
         text-align: center;
         color: #312f8f;
         margin-bottom: 25px;
-        
       }
 
       input::placeholder {
@@ -277,6 +276,24 @@
         background: linear-gradient(135deg, #242b75, #8e1da6);
         transform: translateY(-2px);
       }
+
+      .besme-tali {
+        position: relative;
+        width: 100%;
+        left: 50%;
+        top: -20px;
+        transform: translate(-50%, -50%);
+        /* background-color: red; */
+      }
+
+      .shomare-dore {
+        position: relative;
+        width: 100%;
+        top: -220px;
+        left: 180px;
+        transform: translate(-50%, -50%);
+      }
+
     </style>
   </head>
   <body>
@@ -362,15 +379,18 @@
           </div>
         </div>
 
-        <div class="flex-end">
+        <div class="besme-tali">
           <div style="display: flex; flex-direction: column; align-items: center; justify-content: center">
             <p style="font-size: 25px" class="font-bold">بسم تعالی</p>
             <p style="font-size: 25px" class="font-bold title-content">گواهی پایان دوره آموزشی</p>
           </div>
-          <div>
+        </div>
+        <div class="shomare-dore">
+          <div style="display: flex; flex-direction: column; align-items: center; justify-content: center">
             <p id="resultCourseCode" style="font-size: 25px">شماره:</p>
             <p id="resultIssueDate" class="title-content" style="font-size: 25px">تاریخ صدور:</p>
           </div>
+
         </div>
 
         <div class="real-content" style="font-size: 30px; padding: 0 100px">
