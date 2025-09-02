@@ -137,12 +137,12 @@
       }
       .title-up {
         position: relative;
-        top: -20px;
+        top: -35px;
         /* background-color: red; */
       }
       .title-down {
         position: relative;
-        top: -90px;
+        top: -100px;
         /* background-color: red; */
       }
 
@@ -158,7 +158,7 @@
 
       .title-content {
         position: relative;
-        top: -30px;
+        top: -50px;
       }
 
       .solo-sign {
@@ -169,6 +169,7 @@
         align-items: center;
         font-size: 30px;
       }
+
       .dual-sign {
         width: calc(100% - 160px);
         display: flex;
@@ -293,7 +294,6 @@
         left: 180px;
         transform: translate(-50%, -50%);
       }
-
     </style>
   </head>
   <body>
@@ -369,9 +369,9 @@
           <div class="flex-col">
             <img style="width: 80px; background-color: inherit" src="./assets/ghazadaroo.png" alt="" />
             <p style="font-size: 25px" class="title-up">سازمان غذا و دارو</p>
-            <p style="font-size: 25px" class="title-down">اداره کل امور دارو و مواد تحت کنترل</p>
+            <p style="font-size: 25px" class="title-down" id="section-truee">اداره کل امور دارو و مواد تحت کنترل</p>
           </div>
-          <img src="./assets/jomhori.jpg" alt="" style="width: 200px; position: relative; top: -50px" />
+          <img src="./assets/jomhori.jpg" alt="" style="width: 200px; position: relative; top: -75px" />
           <div class="flex-col">
             <img src="./assets/logo.png" style="width: 60px" alt="" />
             <p style="font-size: 25px" class="title-up">سازمان غذا و دارو</p>
@@ -390,7 +390,6 @@
             <p id="resultCourseCode" style="font-size: 25px">شماره:</p>
             <p id="resultIssueDate" class="title-content" style="font-size: 25px">تاریخ صدور:</p>
           </div>
-
         </div>
 
         <div class="real-content" style="font-size: 30px; padding: 0 100px">
@@ -422,9 +421,9 @@
 
         <div id="section-false" class="solo-sign">
           <div style="position: relative">
-            <img width="350px" src="./assets/sign.PNG" style="transform: rotate(60deg); position: absolute; left: -30px; top: -50px" alt="" />
-            <p>دکتر حسین رستگار</p>
-            <p>رئیس مرکز تحقیقات حلال جمهوری اسلامی ایران</p>
+            <img width="350px" src="./assets/sign.PNG" style="transform: rotate(60deg); position: absolute; left: -60px; top: -50px" alt="" />
+            <p style="text-align: center; position: relative; top: 25px">دکتر حسین رستگار</p>
+            <p style="position: relative; bottom: 25px">رئیس مرکز تحقیقات حلال جمهوری اسلامی ایران</p>
           </div>
         </div>
       </div>
@@ -460,15 +459,18 @@
         const bargozariDate = formData.get("bargozariDate");
         const gender = formData.get("gender");
         const status = formData.get("status");
-        const dualSign = formData.get("dualSign") === "on"; // اگر چک باکس تیک خورده بود true میشه
+        const dualSign = formData.get("dualSign") === "on";
         const sectionTrue = document.getElementById("section-true");
+        const sectionTrue2 = document.getElementById("section-truee");
         const sectionFalse = document.getElementById("section-false");
 
         if (dualSign) {
           sectionTrue.style.display = "flex";
+          sectionTrue2.style.opacity = "1";
           sectionFalse.style.display = "none";
         } else {
           sectionTrue.style.display = "none";
+          sectionTrue2.style.opacity = "0";
           sectionFalse.style.display = "flex";
         }
 
