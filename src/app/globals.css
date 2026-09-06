@@ -1,0 +1,205 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ---------------------------------------------------------------------------
+ * Design tokens
+ *
+ * The palette is built from three brand colours:
+ *   Cobalt      #1f3fc3  - primary actions, focus, links
+ *   Parchment   #f0eeea  - the paper-like application ground
+ *   Dusty Olive #8a855e  - accent / secondary emphasis
+ *
+ * Every component reads semantic tokens only (`--primary`, `--muted`, ...),
+ * never raw hex. Re-theming the app is a matter of editing this block.
+ * ------------------------------------------------------------------------- */
+
+:root {
+  --radius: 0.625rem;
+
+  /* Brand scale -------------------------------------------------------- */
+  --brand-cobalt: #1f3fc3;
+  --brand-cobalt-strong: #182f96;
+  --brand-cobalt-soft: #e8ecfb;
+  --brand-parchment: #f0eeea;
+  --brand-parchment-deep: #e2ded6;
+  --brand-olive: #8a855e;
+  --brand-olive-soft: #eeece2;
+
+  /* Semantic tokens ---------------------------------------------------- */
+  --background: var(--brand-parchment);
+  --foreground: #1b1d24;
+
+  --card: #ffffff;
+  --card-foreground: var(--foreground);
+  --popover: #ffffff;
+  --popover-foreground: var(--foreground);
+
+  --primary: var(--brand-cobalt);
+  --primary-foreground: #ffffff;
+
+  --secondary: var(--brand-parchment-deep);
+  --secondary-foreground: #33353d;
+
+  --muted: #e7e4de;
+  --muted-foreground: #6b6a65;
+
+  --accent: var(--brand-olive);
+  --accent-foreground: #ffffff;
+
+  --destructive: #b3261e;
+  --destructive-foreground: #ffffff;
+
+  --success: #2f6b4f;
+  --success-foreground: #ffffff;
+
+  --border: #d9d5cc;
+  --input: #cfcabf;
+  --ring: var(--brand-cobalt);
+
+  --chart-1: var(--brand-cobalt);
+  --chart-2: var(--brand-olive);
+  --chart-3: #5b73d8;
+  --chart-4: #a8a276;
+  --chart-5: #8f9ee6;
+
+  --sidebar: #faf9f7;
+  --sidebar-foreground: var(--foreground);
+  --sidebar-primary: var(--brand-cobalt);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: var(--brand-cobalt-soft);
+  --sidebar-accent-foreground: var(--brand-cobalt-strong);
+  --sidebar-border: #e3ded4;
+  --sidebar-ring: var(--brand-cobalt);
+}
+
+.dark {
+  --brand-cobalt: #7b92f2;
+  --brand-cobalt-strong: #9db0f7;
+  --brand-cobalt-soft: #1d2440;
+  --brand-parchment: #12141a;
+  --brand-parchment-deep: #1b1e27;
+  --brand-olive: #b8b184;
+  --brand-olive-soft: #232219;
+
+  --background: var(--brand-parchment);
+  --foreground: #eceae5;
+
+  --card: #191c24;
+  --card-foreground: var(--foreground);
+  --popover: #191c24;
+  --popover-foreground: var(--foreground);
+
+  --primary: var(--brand-cobalt);
+  --primary-foreground: #0d1018;
+
+  --secondary: #242833;
+  --secondary-foreground: #dedbd4;
+
+  --muted: #222630;
+  --muted-foreground: #9d9c98;
+
+  --accent: var(--brand-olive);
+  --accent-foreground: #16150f;
+
+  --destructive: #f2827a;
+  --destructive-foreground: #21100e;
+
+  --success: #7fc9a4;
+  --success-foreground: #0b1c14;
+
+  --border: #2c313d;
+  --input: #363c4a;
+  --ring: var(--brand-cobalt);
+
+  --sidebar: #171a21;
+  --sidebar-foreground: var(--foreground);
+  --sidebar-primary: var(--brand-cobalt);
+  --sidebar-primary-foreground: #0d1018;
+  --sidebar-accent: #222736;
+  --sidebar-accent-foreground: #cdd6fb;
+  --sidebar-border: #2a2f3b;
+  --sidebar-ring: var(--brand-cobalt);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-brand-cobalt: var(--brand-cobalt);
+  --color-brand-parchment: var(--brand-parchment);
+  --color-brand-olive: var(--brand-olive);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --font-sans: var(--font-ui), ui-sans-serif, system-ui, sans-serif;
+  --font-nastaliq: var(--font-nastaliq), "IranNastaliq", serif;
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  /* The Persian UI face ships a stylistic set that fixes its default numerals. */
+  :lang(fa) {
+    font-feature-settings: "ss01";
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * Certificate stage
+ *
+ * The certificate is drawn on a fixed design canvas and must look identical on
+ * every machine, so it deliberately opts out of the theme: white paper, black
+ * ink, no inherited colours.
+ * ------------------------------------------------------------------------- */
+@layer components {
+  .certificate-surface {
+    color-scheme: light;
+    background-color: #ffffff;
+    color: #000000;
+  }
+}
