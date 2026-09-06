@@ -1,6 +1,6 @@
 "use client";
 
-import type { Control, FieldValues, UseFormWatch } from "react-hook-form";
+import type { Control, FieldValues } from "react-hook-form";
 
 import { FieldControl } from "@/components/form/field-control";
 import type { CertificateTemplate } from "@/lib/templates/types";
@@ -12,16 +12,16 @@ import type { CertificateTemplate } from "@/lib/templates/types";
 export function TemplateForm<TValues extends FieldValues>({
   template,
   control,
-  watch,
+  values,
   errors,
 }: {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   template: CertificateTemplate<any>;
   control: Control<TValues>;
-  watch: UseFormWatch<TValues>;
+  /** Current form values, used to evaluate each field's `visibleWhen`. */
+  values: Record<string, unknown>;
   errors: Record<string, { message?: string } | undefined>;
 }) {
-  const values = watch() as Record<string, unknown>;
 
   return (
     <div className="space-y-8">

@@ -21,26 +21,47 @@ type LookupState =
 
 export function VerifyPanel() {
   const searchParams = useSearchParams();
-  const [serial, setSerial] = useState("");
-  const [state, setState] = useState<LookupState>({ status: "idle" });
+  // A QR scan lands here with the serial already in the URL, so it seeds the
+  // field directly. (This subtree is inside a Suspense boundary, so the client
+  // owns the render and there is nothing to reconcile against.)
+  const serialFromUrl = searchParams.get("serial")?.trim() ?? "";
+  const [serial, setSerial] = useState(serialFromUrl);
+  const [state, setState] = useState<LookupState>(
+    serialFromUrl ? { status: "searching" } : { status: "idle" },
+  );
 
-  const lookup = useCallback(async (value: string) => {
-    const trimmed = value.trim();
-    if (!trimmed) return;
-
-    setState({ status: "searching" });
-    const record = await certificateRepository.findBySerial(trimmed);
-    setState(record ? { status: "found", record } : { status: "missing", serial: trimmed });
+  const resolve = useCallback(async (value: string) => {
+    const record = await certificateRepository.findBySerial(value);
+    return record
+      ? ({ status: "found", record } as const)
+      : ({ status: "missing", serial: value } as const);
   }, []);
 
-  // A QR scan lands here with the serial already in the URL.
+  const lookup = useCallback(
+    async (value: string) => {
+      const trimmed = value.trim();
+      if (!trimmed) return;
+
+      setState({ status: "searching" });
+      setState(await resolve(trimmed));
+    },
+    [resolve],
+  );
+
+  // A serial arriving in the URL is looked up on load; the initial state above
+  // already reads as "searching", so nothing is set synchronously here.
   useEffect(() => {
-    const fromUrl = searchParams.get("serial");
-    if (fromUrl) {
-      setSerial(fromUrl);
-      void lookup(fromUrl);
-    }
-  }, [searchParams, lookup]);
+    if (!serialFromUrl) return;
+
+    let cancelled = false;
+    void resolve(serialFromUrl).then((next) => {
+      if (!cancelled) setState(next);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [serialFromUrl, resolve]);
 
   const template =
     state.status === "found" ? findTemplate(state.record.templateId) : null;

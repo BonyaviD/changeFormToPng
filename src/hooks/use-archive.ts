@@ -23,6 +23,10 @@ export function useArchive() {
   }, []);
 
   useEffect(() => {
+    // `refresh` awaits the repository before it touches state, so this is not
+    // the synchronous cascade the rule guards against — it is the initial read
+    // of an external store.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void refresh();
 
     const handler = () => void refresh();
