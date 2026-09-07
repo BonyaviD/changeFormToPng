@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { dateToJalali, formatJalaliLong } from "@/lib/jalali";
 import { certificateRepository, type CertificateRecord } from "@/lib/storage";
 import { findTemplate } from "@/lib/templates/registry";
+import { cn } from "@/lib/utils";
 
 type LookupState =
   | { status: "idle" }
@@ -81,7 +82,8 @@ export function VerifyPanel() {
               value={serial}
               onChange={(event) => setSerial(event.target.value)}
               placeholder="شماره پیگیری گواهی"
-              className="h-10 max-w-xs font-mono"
+              // Monospace suits the code but stretches the Persian placeholder.
+              className={cn("h-10 max-w-xs", serial && "font-mono")}
             />
             <Button type="submit" disabled={state.status === "searching"}>
               <Search className="size-4" />
