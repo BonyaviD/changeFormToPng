@@ -22,7 +22,6 @@ export function TemplateForm<TValues extends FieldValues>({
   values: Record<string, unknown>;
   errors: Record<string, { message?: string } | undefined>;
 }) {
-
   return (
     <div className="space-y-8">
       {template.groups.map((group) => {

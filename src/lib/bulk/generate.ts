@@ -1,15 +1,14 @@
 import JSZip from "jszip";
 
-import { generateQrDataUrl, generateSerial } from "@/lib/qr";
 import { safeFilename } from "@/lib/render/download";
 import { renderCertificatePdf, renderCertificatePng } from "@/lib/render/export";
+import { generateSerial } from "@/lib/serial";
 import type { CertificateRecord } from "@/lib/storage";
 import type { CertificateTemplate } from "@/lib/templates/types";
 
 import type { MappedRow } from "./mapping";
 
 export interface BulkOptions {
-  includeQr: boolean;
   format: "png" | "pdf";
 }
 
@@ -49,8 +48,7 @@ export async function generateBulkArchive(
 
   for (const [index, row] of valid.entries()) {
     const serial = generateSerial();
-    const qrDataUrl = options.includeQr ? await generateQrDataUrl(serial) : undefined;
-    const context = { qrDataUrl, serial: qrDataUrl ? serial : undefined };
+    const context = { serial };
 
     const blob =
       options.format === "pdf"

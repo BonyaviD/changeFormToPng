@@ -61,9 +61,10 @@ export interface CanvasSize {
 }
 
 export interface ArtworkContext {
-  /** Data URL of the verification QR code, when the template asks for one. */
-  qrDataUrl?: string;
-  /** Stable serial assigned when the certificate is issued. */
+  /**
+   * Tracking number assigned when the certificate is issued. Passed to every
+   * artwork so a design can stamp it; this template does not.
+   */
   serial?: string;
 }
 
@@ -81,8 +82,6 @@ export interface CertificateTemplate<TValues = Record<string, unknown>> {
   /** Bump when the artwork changes in a way that alters existing output. */
   version: number;
   size: CanvasSize;
-  /** Static preview thumbnail shown in the template picker. */
-  thumbnail: string;
   /**
    * Input is left open because schemas legitimately transform on the way in
    * (Persian numerals normalised, optional fields defaulted), so what the form
@@ -93,8 +92,6 @@ export interface CertificateTemplate<TValues = Record<string, unknown>> {
   defaults: TValues;
   /** Realistic values used by the "نمونه" button and by the picker preview. */
   sample: TValues;
-  /** Whether the artwork renders a verification QR code. */
-  supportsQr: boolean;
   summarize: (values: TValues) => RecordSummary;
   /** Filename stem for downloads, without extension. */
   fileStem: (values: TValues) => string;

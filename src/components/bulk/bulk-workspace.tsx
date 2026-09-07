@@ -44,7 +44,6 @@ export function BulkWorkspace() {
 
   const [fileName, setFileName] = useState<string>();
   const [mapping, setMapping] = useState<MappingResult>();
-  const [includeQr, setIncludeQr] = useState(false);
   const [asPdf, setAsPdf] = useState(false);
   const [progress, setProgress] = useState<BulkProgress>();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -81,7 +80,7 @@ export function BulkWorkspace() {
       const { zip, records } = await generateBulkArchive(
         template,
         mapping.rows,
-        { includeQr, format: asPdf ? "pdf" : "png" },
+        { format: asPdf ? "pdf" : "png" },
         setProgress,
       );
 
@@ -157,16 +156,6 @@ export function BulkWorkspace() {
               خروجی PDF به‌جای تصویر
               <Switch id="bulk-pdf" checked={asPdf} onCheckedChange={setAsPdf} />
             </Label>
-
-            {template.supportsQr ? (
-              <Label
-                htmlFor="bulk-qr"
-                className="hover:bg-muted/60 flex cursor-pointer items-center justify-between gap-3 rounded-lg border px-3 py-3 text-sm"
-              >
-                درج کد استعلام (QR)
-                <Switch id="bulk-qr" checked={includeQr} onCheckedChange={setIncludeQr} />
-              </Label>
-            ) : null}
 
             <Button
               className="w-full"

@@ -3,7 +3,6 @@ import type { CSSProperties, ReactNode } from "react";
 import { formatJalali } from "@/lib/jalali";
 import { toPersianDigits } from "@/lib/persian";
 
-import type { ArtworkContext } from "../types";
 import {
   ASSETS,
   BODY,
@@ -12,7 +11,6 @@ import {
   META_BLOCK,
   PAPER,
   PRIMARY_SIGNATORY,
-  QR,
   SIGNATURE,
   TITLE_BLOCK,
 } from "./layout";
@@ -155,13 +153,7 @@ function SignatureBlock({
 /* Artwork                                                                     */
 /* -------------------------------------------------------------------------- */
 
-export function HalalTrainingArtwork({
-  values,
-  context,
-}: {
-  values: HalalTrainingValues;
-  context: ArtworkContext;
-}) {
+export function HalalTrainingArtwork({ values }: { values: HalalTrainingValues }) {
   const honorific = HONORIFIC[values.gender] ?? "";
   const attendance = ATTENDANCE_LABEL[values.attendance] ?? "";
   const duration = values.duration?.trim();
@@ -328,35 +320,6 @@ export function HalalTrainingArtwork({
         />
       )}
 
-      {/* --- Verification QR ---------------------------------------------- */}
-      {context.qrDataUrl ? (
-        <>
-          <div
-            style={{
-              position: "absolute",
-              left: QR.x,
-              top: QR.y,
-              width: QR.size,
-              height: QR.size,
-            }}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={context.qrDataUrl}
-              alt="کد استعلام"
-              style={{ width: "100%", height: "100%", display: "block" }}
-            />
-          </div>
-          <CentredBlock
-            centreX={QR.x + QR.size / 2}
-            top={QR.captionTop}
-            width={200}
-            style={{ fontSize: QR.captionFontSize, lineHeight: "20px" }}
-          >
-            {context.serial ? toPersianDigits(context.serial) : "کد استعلام"}
-          </CentredBlock>
-        </>
-      ) : null}
     </div>
   );
 }

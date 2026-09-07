@@ -43,21 +43,36 @@ export async function withOffscreenRender<T>(
   }
 }
 
-const MAX_FRAMES = 120;
+const MAX_TICKS = 120;
+/**
+ * Browsers stop firing `requestAnimationFrame` in a backgrounded tab, so an
+ * export started just before the user switches away would never progress. Every
+ * wait races the frame callback against a timer, which keeps ticking.
+ */
+const TICK_FALLBACK_MS = 32;
 
 async function waitForFirstChild(host: HTMLElement): Promise<HTMLElement> {
-  for (let frame = 0; frame < MAX_FRAMES; frame += 1) {
+  for (let tick = 0; tick < MAX_TICKS; tick += 1) {
     const child = host.firstElementChild;
     if (child instanceof HTMLElement) {
-      // One more frame so layout and style resolution have settled.
-      await nextFrame();
+      // One more tick so layout and style resolution have settled.
+      await nextTick();
       return child;
     }
-    await nextFrame();
+    await nextTick();
   }
   throw new Error("رندر گواهی در زمان مجاز کامل نشد.");
 }
 
-function nextFrame(): Promise<void> {
-  return new Promise((resolve) => requestAnimationFrame(() => resolve()));
+function nextTick(): Promise<void> {
+  return new Promise((resolve) => {
+    let settled = false;
+    const done = () => {
+      if (settled) return;
+      settled = true;
+      resolve();
+    };
+    requestAnimationFrame(done);
+    setTimeout(done, TICK_FALLBACK_MS);
+  });
 }

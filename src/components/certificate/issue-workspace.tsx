@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Download, FileImage, FileText, RotateCcw, Save, Wand2 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -11,10 +11,8 @@ import { TemplatePicker } from "@/components/certificate/template-picker";
 import { TemplateForm } from "@/components/form/template-form";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import { Switch } from "@/components/ui/switch";
-import { generateQrDataUrl, generateSerial } from "@/lib/qr";
+import { toPersianDigits } from "@/lib/persian";
+import { generateSerial } from "@/lib/serial";
 import { downloadCertificate, type ExportFormat } from "@/lib/render/export";
 import { certificateRepository, notifyArchiveChanged } from "@/lib/storage";
 import { DEFAULT_TEMPLATE_ID, getTemplate } from "@/lib/templates/registry";
@@ -26,14 +24,12 @@ export function IssueWorkspace() {
   const [templateId, setTemplateId] = useState(DEFAULT_TEMPLATE_ID);
   const template = useMemo(() => getTemplate(templateId), [templateId]);
 
-  const [includeQr, setIncludeQr] = useState(false);
   /**
    * The tracking number for this form session. It is minted on first use rather
    * than at mount: generating it during render would produce a different value
    * on the server than in the browser, and hydration would tear the tree down.
    */
   const [serial, setSerial] = useState("");
-  const [qrDataUrl, setQrDataUrl] = useState<string>();
   const [busy, setBusy] = useState<ExportFormat | "save" | null>(null);
 
   const form = useForm<Values>({
@@ -55,30 +51,12 @@ export function IssueWorkspace() {
     return minted;
   }, [serial]);
 
-  useEffect(() => {
-    if (!includeQr || !serial) return;
 
-    let cancelled = false;
-    generateQrDataUrl(serial)
-      .then((url) => {
-        if (!cancelled) setQrDataUrl(url);
-      })
-      .catch(() => toast.error("ساخت کد استعلام ناموفق بود."));
-
-    return () => {
-      cancelled = true;
-    };
-  }, [includeQr, serial]);
-
-  const context: ArtworkContext = useMemo(
-    () => (includeQr && qrDataUrl ? { qrDataUrl, serial } : {}),
-    [includeQr, qrDataUrl, serial],
-  );
+  const context: ArtworkContext = useMemo(() => ({ serial }), [serial]);
 
   /** Clears the identity of the current certificate without touching the form. */
   function startNewCertificate() {
     setSerial("");
-    setQrDataUrl(undefined);
   }
 
   function handleTemplateChange(nextId: string) {
@@ -86,12 +64,6 @@ export function IssueWorkspace() {
     setTemplateId(nextId);
     reset(getTemplate(nextId).defaults as Values);
     startNewCertificate();
-  }
-
-  function handleQrToggle(next: boolean) {
-    setIncludeQr(next);
-    if (next) ensureSerial();
-    else setQrDataUrl(undefined);
   }
 
   const persist = useCallback(
@@ -177,29 +149,6 @@ export function IssueWorkspace() {
                 errors={formState.errors as Record<string, { message?: string }>}
               />
 
-              {template.supportsQr ? (
-                <>
-                  <Separator />
-                  <Label
-                    htmlFor="include-qr"
-                    className="hover:bg-muted/60 flex cursor-pointer items-start justify-between gap-3 rounded-lg border px-3 py-3 text-sm transition-colors"
-                  >
-                    <span className="space-y-1">
-                      <span className="block">درج کد استعلام (QR)</span>
-                      <span className="text-muted-foreground block text-xs font-normal">
-                        {serial
-                          ? `شماره پیگیری ${serial} روی گواهی چاپ می‌شود.`
-                          : "یک شماره پیگیری ساخته و روی گواهی چاپ می‌شود."}
-                      </span>
-                    </span>
-                    <Switch
-                      id="include-qr"
-                      checked={includeQr}
-                      onCheckedChange={handleQrToggle}
-                    />
-                  </Label>
-                </>
-              ) : null}
             </form>
           </CardContent>
         </Card>
@@ -256,8 +205,7 @@ export function IssueWorkspace() {
 
         <p className="text-muted-foreground flex items-center gap-1.5 text-xs">
           <Download className="size-3.5" />
-          خروجی همیشه با ابعاد ثابت {template.size.width * 2}×{template.size.height * 2}
-          پیکسل ساخته می‌شود؛ نوع نمایشگر روی نتیجه اثری ندارد.
+          {`خروجی همیشه با ابعاد ثابت ${toPersianDigits(template.size.width * 2)}×${toPersianDigits(template.size.height * 2)} پیکسل ساخته می‌شود؛ نوع نمایشگر روی نتیجه اثری ندارد.`}
         </p>
       </div>
     </div>

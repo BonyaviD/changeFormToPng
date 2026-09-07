@@ -21,9 +21,9 @@ type LookupState =
 
 export function VerifyPanel() {
   const searchParams = useSearchParams();
-  // A QR scan lands here with the serial already in the URL, so it seeds the
-  // field directly. (This subtree is inside a Suspense boundary, so the client
-  // owns the render and there is nothing to reconcile against.)
+  // A `?serial=` link seeds the field directly. (This subtree is inside a
+  // Suspense boundary, so the client owns the render and there is nothing to
+  // reconcile against.)
   const serialFromUrl = searchParams.get("serial")?.trim() ?? "";
   const [serial, setSerial] = useState(serialFromUrl);
   const [state, setState] = useState<LookupState>(

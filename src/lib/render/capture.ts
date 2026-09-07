@@ -28,10 +28,17 @@ export const CAPTURE_PIXEL_RATIO = 2;
  * bulk run rather than once per certificate is the difference between a
  * three-second export and a three-minute one.
  */
+const FONT_EMBED_TIMEOUT_MS = 20_000;
+
 let fontEmbedCache: Promise<string> | null = null;
 
 export function primeFontEmbedCache(node: HTMLElement): Promise<string> {
-  fontEmbedCache ??= getFontEmbedCSS(node).catch((error) => {
+  fontEmbedCache ??= Promise.race([
+    getFontEmbedCSS(node),
+    // Embedding walks every stylesheet and fetches each font file. A request
+    // that never settles must not hold the export open.
+    new Promise<string>((resolve) => setTimeout(() => resolve(""), FONT_EMBED_TIMEOUT_MS)),
+  ]).catch((error) => {
     // A failed embed is recoverable (the browser still has the font loaded
     // locally), so don't poison the cache — just fall back to no override.
     fontEmbedCache = null;
@@ -65,35 +72,101 @@ async function captureOptions(node: HTMLElement, size: CanvasSize) {
 }
 
 /**
- * Waits until every `<img>` inside the node has decoded. `html-to-image`
- * inlines images itself, but a not-yet-decoded image can still produce a blank
- * region on slower machines.
+ * Nothing in the readiness check may block forever: a stalled export leaves the
+ * button spinning with no error for the user to act on.
+ */
+const READY_TIMEOUT_MS = 10_000;
+
+function withTimeout(promise: Promise<unknown>, ms = READY_TIMEOUT_MS): Promise<void> {
+  return new Promise<void>((resolve) => {
+    const timer = setTimeout(resolve, ms);
+    void promise.then(
+      () => {
+        clearTimeout(timer);
+        resolve();
+      },
+      () => {
+        clearTimeout(timer);
+        resolve();
+      },
+    );
+  });
+}
+
+/**
+ * Waits until every `<img>` inside the node has settled. `html-to-image` inlines
+ * images itself, but a not-yet-decoded image can still produce a blank region on
+ * slower machines.
+ *
+ * An image that already failed reports `complete === true` with a zero
+ * `naturalWidth` and will never fire another event, so `complete` alone is the
+ * signal to move on — waiting for a load that cannot arrive is what hung the
+ * export.
  */
 export async function waitForImages(node: HTMLElement): Promise<void> {
   const images = Array.from(node.querySelectorAll("img"));
+
   await Promise.all(
     images.map((image) => {
-      if (image.complete && image.naturalWidth > 0) return Promise.resolve();
-      return new Promise<void>((resolve) => {
-        image.addEventListener("load", () => resolve(), { once: true });
-        image.addEventListener("error", () => resolve(), { once: true });
-      });
+      if (image.complete) return Promise.resolve();
+      return withTimeout(
+        new Promise<void>((resolve) => {
+          image.addEventListener("load", () => resolve(), { once: true });
+          image.addEventListener("error", () => resolve(), { once: true });
+        }),
+      );
     }),
   );
 
   if (typeof document !== "undefined" && "fonts" in document) {
-    await document.fonts.ready;
+    await withTimeout(document.fonts.ready);
   }
+}
+
+/**
+ * `html-to-image` serialises the node into an SVG `foreignObject` data URL —
+ * several megabytes once the fonts and artwork are inlined — and loads it into
+ * an `Image`. Chromium occasionally neither resolves nor rejects that load, and
+ * the export then hangs with the button stuck on "generating" and nothing for
+ * the user to act on. Bounding it turns an indefinite hang into one retry and,
+ * failing that, a visible error.
+ */
+const CAPTURE_TIMEOUT_MS = 30_000;
+
+async function runCapture<T>(work: () => Promise<T>, what: string): Promise<T> {
+  for (let attempt = 1; attempt <= 2; attempt += 1) {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const timeout = new Promise<never>((_, reject) => {
+      timer = setTimeout(() => reject(new Error("CAPTURE_TIMEOUT")), CAPTURE_TIMEOUT_MS);
+    });
+
+    try {
+      return await Promise.race([work(), timeout]);
+    } catch (error) {
+      if (!(error instanceof Error && error.message === "CAPTURE_TIMEOUT")) throw error;
+      if (attempt === 2) {
+        throw new Error(`ساخت ${what} بیش از حد طول کشید. دوباره تلاش کنید.`);
+      }
+      console.warn(`${what}: تلاش اول به نتیجه نرسید؛ دوباره تلاش می‌شود.`);
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  // Unreachable: the loop either returns or throws.
+  throw new Error(`ساخت ${what} ناموفق بود.`);
 }
 
 export async function captureDataUrl(node: HTMLElement, size: CanvasSize): Promise<string> {
   await waitForImages(node);
-  return toPng(node, await captureOptions(node, size));
+  const options = await captureOptions(node, size);
+  return runCapture(() => toPng(node, options), "تصویر گواهی");
 }
 
 export async function captureBlob(node: HTMLElement, size: CanvasSize): Promise<Blob> {
   await waitForImages(node);
-  const blob = await toBlob(node, await captureOptions(node, size));
+  const options = await captureOptions(node, size);
+  const blob = await runCapture(() => toBlob(node, options), "تصویر گواهی");
   if (!blob) {
     throw new Error("ساخت تصویر گواهی ناموفق بود.");
   }

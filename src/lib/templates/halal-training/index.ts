@@ -2,7 +2,7 @@ import { serializeJalali, todayJalali } from "@/lib/jalali";
 
 import type { CertificateTemplate, FieldGroup } from "../types";
 import { HalalTrainingArtwork } from "./artwork";
-import { CANVAS, ASSETS } from "./layout";
+import { CANVAS } from "./layout";
 import {
   ATTENDANCE_OPTIONS,
   GENDER_OPTIONS,
@@ -171,12 +171,10 @@ export const halalTrainingTemplate: CertificateTemplate<HalalTrainingValues> = {
   description: "قالب رسمی مرکز تحقیقات حلال با کادر تذهیب و امضای رئیس مرکز.",
   version: 1,
   size: CANVAS,
-  thumbnail: ASSETS.frame,
   schema: halalTrainingSchema,
   groups,
   defaults: emptyValues,
   sample: sampleValues,
-  supportsQr: true,
   summarize: (values) => ({
     primary: values.fullName || "بدون نام",
     secondary: values.courseTitle || "بدون عنوان دوره",

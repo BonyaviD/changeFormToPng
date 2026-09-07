@@ -9,7 +9,7 @@ export default function VerifyPage() {
     <div className="space-y-6">
       <PageHeader
         title="استعلام گواهی"
-        description="شماره پیگیری را وارد کنید یا کد QR روی گواهی را اسکن کنید."
+        description="شماره پیگیری گواهی را وارد کنید تا اصالت و مشخصات آن نمایش داده شود."
       />
       {/* `useSearchParams` needs a boundary so the shell can still prerender. */}
       <Suspense fallback={<Skeleton className="h-32 w-full" />}>

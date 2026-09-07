@@ -40,7 +40,7 @@ export const HEADER = {
   columns: { right: 908, centre: 575, left: 252 },
   logoTop: 92,
   fdaLogoWidth: 78,
-  halalLogoWidth: 62,
+  halalLogoWidth: 72,
   emblem: { top: 84, width: 208 },
   captionWidth: 340,
   captionTop: 180,
@@ -75,9 +75,9 @@ export const META_BLOCK = {
  * both directions instead of colliding with the signature.
  */
 export const BODY = {
-  x: 105,
+  x: 150,
   top: 408,
-  width: 940,
+  width: 850,
   height: 244,
   fontSize: 30,
   /**
@@ -91,21 +91,18 @@ export const BODY = {
 export const SIGNATURE = {
   /** Horizontal centre when a single signature is printed. */
   soloCentreX: 575,
-  /** Centres of the two blocks when a second signatory is added. */
-  dualCentreX: { primary: 812, secondary: 338 },
-  blockWidth: 430,
+  /**
+   * Centres of the two blocks when a second signatory is added. At 380 wide
+   * they occupy x 630-1010 and 150-530, so the longest signatory title still
+   * leaves a clear gap between them.
+   */
+  dualCentreX: { primary: 820, secondary: 340 },
+  blockWidth: 380,
   nameTop: 676,
   titleTop: 712,
   nameFontSize: 27,
   titleFontSize: 22,
   /** The scanned signature sits behind the name, slightly to its left. */
-  image: { width: 300, offsetX: -30, offsetY: -132, rotation: 60 },
+  image: { width: 300, offsetX: -70, offsetY: -140, rotation: 60 },
 } as const;
 
-export const QR = {
-  x: 104,
-  y: 632,
-  size: 92,
-  captionTop: 728,
-  captionFontSize: 15,
-} as const;
