@@ -3,6 +3,8 @@ import JSZip from "jszip";
 import { safeFilename } from "@/lib/render/download";
 import { renderCertificatePdf, renderCertificatePng } from "@/lib/render/export";
 import { generateSerial } from "@/lib/serial";
+import { buildArtworkContext } from "@/lib/settings/artwork-context";
+import { readSettings } from "@/lib/settings/store";
 import type { CertificateRecord } from "@/lib/storage";
 import type { CertificateTemplate } from "@/lib/templates/types";
 
@@ -45,10 +47,12 @@ export async function generateBulkArchive(
   const zip = new JSZip();
   const records: CertificateRecord[] = [];
   const usedNames = new Set<string>();
+  // Read once: the catalogue cannot change midway through a run.
+  const settings = readSettings();
 
   for (const [index, row] of valid.entries()) {
     const serial = generateSerial();
-    const context = { serial };
+    const context = buildArtworkContext(settings, serial);
 
     const blob =
       options.format === "pdf"

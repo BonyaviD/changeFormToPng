@@ -1,8 +1,9 @@
 "use client";
 
-import type { Control, FieldValues } from "react-hook-form";
+import type { Control, FieldValues, UseFormSetValue } from "react-hook-form";
 
 import { FieldControl } from "@/components/form/field-control";
+import { useSettings } from "@/hooks/use-settings";
 import type { CertificateTemplate } from "@/lib/templates/types";
 
 /**
@@ -12,16 +13,22 @@ import type { CertificateTemplate } from "@/lib/templates/types";
 export function TemplateForm<TValues extends FieldValues>({
   template,
   control,
+  setValue,
   values,
   errors,
 }: {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   template: CertificateTemplate<any>;
   control: Control<TValues>;
+  setValue: UseFormSetValue<TValues>;
   /** Current form values, used to evaluate each field's `visibleWhen`. */
   values: Record<string, unknown>;
   errors: Record<string, { message?: string } | undefined>;
 }) {
+  // Option lists for course, signatory and header-caption fields come from the
+  // settings catalogue rather than from the template.
+  const { settings } = useSettings();
+
   return (
     <div className="space-y-8">
       {template.groups.map((group) => {
@@ -45,6 +52,8 @@ export function TemplateForm<TValues extends FieldValues>({
                   key={field.name}
                   field={field}
                   control={control}
+                  setValue={setValue}
+                  settings={settings}
                   error={errors[field.name]?.message}
                 />
               ))}

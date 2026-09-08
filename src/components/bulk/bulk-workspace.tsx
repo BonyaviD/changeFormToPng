@@ -36,11 +36,14 @@ import { parseSpreadsheet } from "@/lib/bulk/parse";
 import { toPersianDigits } from "@/lib/persian";
 import { downloadBlob } from "@/lib/render/download";
 import { certificateRepository, notifyArchiveChanged } from "@/lib/storage";
+import { useSettings } from "@/hooks/use-settings";
+import { buildArtworkContext } from "@/lib/settings/artwork-context";
 import { DEFAULT_TEMPLATE_ID, getTemplate } from "@/lib/templates/registry";
 
 export function BulkWorkspace() {
   const [templateId, setTemplateId] = useState(DEFAULT_TEMPLATE_ID);
   const template = useMemo(() => getTemplate(templateId), [templateId]);
+  const { settings } = useSettings();
 
   const [fileName, setFileName] = useState<string>();
   const [mapping, setMapping] = useState<MappingResult>();
@@ -222,7 +225,11 @@ export function BulkWorkspace() {
               <Card className="overflow-hidden py-0">
                 <div className="bg-muted/40 p-4">
                   <div className="mx-auto max-w-3xl overflow-hidden rounded-md shadow">
-                    <CertificateStage template={template} values={firstValid.values} />
+                    <CertificateStage
+                      template={template}
+                      values={firstValid.values}
+                      context={buildArtworkContext(settings)}
+                    />
                   </div>
                 </div>
               </Card>

@@ -1,4 +1,5 @@
 import { serializeJalali, todayJalali } from "@/lib/jalali";
+import { DEFAULT_SIGNATORIES, DEFAULT_UNIT_CAPTIONS } from "@/lib/settings/defaults";
 
 import type { CertificateTemplate, FieldGroup } from "../types";
 import { HalalTrainingArtwork } from "./artwork";
@@ -10,6 +11,8 @@ import {
   type HalalTrainingValues,
 } from "./schema";
 
+const [defaultSignatory] = DEFAULT_SIGNATORIES;
+
 const groups: readonly FieldGroup[] = [
   {
     id: "course",
@@ -19,8 +22,13 @@ const groups: readonly FieldGroup[] = [
       {
         name: "courseTitle",
         label: "عنوان دوره",
-        kind: "text",
-        placeholder: "برای مثال: اصول فرآوری حلال",
+        kind: "combobox",
+        placeholder: "انتخاب از فهرست دوره‌ها یا تایپ عنوان جدید",
+        // Picking a catalogued course drops its certificate code into the next
+        // field; typing a new title leaves the code to be entered by hand.
+        optionsSource: "courses",
+        optionsFillMap: { code: "courseCode" },
+        hint: "فهرست دوره‌ها از صفحه‌ی تنظیمات قابل ویرایش است.",
         span: 2,
         importAliases: ["دوره", "نام دوره", "course", "course title"],
       },
@@ -28,9 +36,9 @@ const groups: readonly FieldGroup[] = [
         name: "courseCode",
         label: "کد دوره",
         kind: "text",
-        placeholder: "برای مثال: ۱۲۱۰۳۲۰/۲۲۲",
+        placeholder: "برای مثال: ۴۰۰/۷۰۵",
         hint: "همان عددی که روی گواهی با عنوان «شماره» چاپ می‌شود.",
-        importAliases: ["شماره", "کد", "code", "course code"],
+        importAliases: ["شماره", "کد", "code", "course code", "کد گواهی"],
       },
       {
         name: "duration",
@@ -52,6 +60,7 @@ const groups: readonly FieldGroup[] = [
         label: "تاریخ صدور",
         kind: "jalali-date",
         placeholder: "انتخاب تاریخ",
+        hint: "پیش‌فرض تاریخ امروز؛ نمی‌تواند قبل از تاریخ برگزاری باشد.",
         importAliases: ["تاریخ صدور", "issue", "issue date"],
       },
       {
@@ -102,10 +111,26 @@ const groups: readonly FieldGroup[] = [
   },
   {
     id: "signature",
-    title: "امضا",
+    title: "امضا و سربرگ",
     description:
-      "امضای اول همیشه رئیس مرکز تحقیقات حلال است. در صورت نیاز امضای دوم اضافه کنید.",
+      "امضاکنندگان از فهرست تنظیمات انتخاب می‌شوند و تصویر امضایشان خودکار روی گواهی می‌آید.",
     fields: [
+      {
+        name: "primarySignatoryName",
+        label: "امضاکننده (سمت چپ)",
+        kind: "combobox",
+        placeholder: "انتخاب امضاکننده",
+        optionsSource: "signatories",
+        optionsFillMap: { title: "primarySignatoryTitle" },
+        importAliases: ["امضاکننده", "signatory"],
+      },
+      {
+        name: "primarySignatoryTitle",
+        label: "سمت امضاکننده",
+        kind: "text",
+        placeholder: "برای مثال: رئیس مرکز …",
+        importAliases: ["سمت امضاکننده", "signatory title"],
+      },
       {
         name: "dualSignature",
         label: "گواهی دو امضا داشته باشد",
@@ -115,9 +140,11 @@ const groups: readonly FieldGroup[] = [
       },
       {
         name: "secondSignatoryName",
-        label: "نام امضاکننده دوم",
-        kind: "text",
-        placeholder: "برای مثال: دکتر …",
+        label: "امضاکننده دوم (سمت راست)",
+        kind: "combobox",
+        placeholder: "انتخاب یا تایپ نام",
+        optionsSource: "signatories",
+        optionsFillMap: { title: "secondSignatoryTitle" },
         visibleWhen: (values) => values.dualSignature === true,
         importAliases: ["امضاکننده دوم", "second signatory"],
       },
@@ -129,9 +156,22 @@ const groups: readonly FieldGroup[] = [
         visibleWhen: (values) => values.dualSignature === true,
         importAliases: ["سمت امضاکننده دوم", "second signatory title"],
       },
+      {
+        name: "secondUnitCaption",
+        label: "عنوان زیر لوگوی سمت راست",
+        kind: "combobox",
+        placeholder: "برای مثال: اداره کل امور دارو و مواد تحت کنترل",
+        optionsSource: "unitCaptions",
+        hint: "فقط در حالت دو امضا روی سربرگ چاپ می‌شود.",
+        span: 2,
+        visibleWhen: (values) => values.dualSignature === true,
+        importAliases: ["اداره", "عنوان سربرگ", "unit"],
+      },
     ],
   },
 ];
+
+const today = serializeJalali(todayJalali());
 
 const emptyValues: HalalTrainingValues = {
   courseTitle: "",
@@ -140,36 +180,37 @@ const emptyValues: HalalTrainingValues = {
   fatherName: "",
   nationalId: "",
   duration: "",
-  issueDate: serializeJalali(todayJalali()),
-  heldDate: serializeJalali(todayJalali()),
+  issueDate: today,
+  heldDate: today,
   gender: "male",
-  attendance: "in-person",
+  // Most courses are run online, so this is the value that is right by default.
+  attendance: "remote",
+  primarySignatoryName: defaultSignatory.name,
+  primarySignatoryTitle: defaultSignatory.title,
   dualSignature: false,
   secondSignatoryName: "",
   secondSignatoryTitle: "",
+  secondUnitCaption: DEFAULT_UNIT_CAPTIONS[0],
 };
 
 const sampleValues: HalalTrainingValues = {
-  courseTitle: "آشنایی با الزامات حلال",
-  courseCode: "1210320/222",
+  ...emptyValues,
+  courseTitle: "آشنایی با مبانی حلیت، حرمت و طهارت",
+  courseCode: "400/617",
   fullName: "مهسا میهن‌دوست",
   fatherName: "مسیب",
   nationalId: "1480180014",
   duration: "۸ ساعت",
-  issueDate: "1404-02-04",
-  heldDate: "1402-12-03",
+  heldDate: "1404-05-12",
   gender: "female",
-  attendance: "in-person",
-  dualSignature: false,
-  secondSignatoryName: "",
-  secondSignatoryTitle: "",
+  attendance: "remote",
 };
 
 export const halalTrainingTemplate: CertificateTemplate<HalalTrainingValues> = {
   id: "halal-training",
   name: "گواهی پایان دوره آموزشی",
   description: "قالب رسمی مرکز تحقیقات حلال با کادر تذهیب و امضای رئیس مرکز.",
-  version: 1,
+  version: 2,
   size: CANVAS,
   schema: halalTrainingSchema,
   groups,

@@ -91,7 +91,15 @@ export function mapSheetToRows(
     for (const field of fields) {
       const column = columnForField.get(field.name);
       if (column === undefined) continue;
-      raw[field.name] = coerceCell(field, cells[column] ?? "");
+
+      const cell = (cells[column] ?? "").trim();
+      // A blank cell means "not specified", not "specified as empty". Writing
+      // "" over the template default is what made an empty attendance column
+      // fail validation as an invalid enum value instead of falling back to
+      // the default, so blanks are skipped entirely.
+      if (cell === "") continue;
+
+      raw[field.name] = coerceCell(field, cell);
     }
 
     const parsed = template.schema.safeParse(raw);
@@ -117,7 +125,16 @@ export function mapSheetToRows(
     unmatchedHeaders: table.headers.filter(
       (header, index) => header !== "" && !matchedColumns.has(index),
     ),
-    missingFields: fields.filter((field) => !columnForField.has(field.name)),
+    // Only worth reporting when the template has nothing to fall back on. A
+    // sheet that omits the signatory columns is normal — those default to the
+    // configured signatory — and warning about them buries the columns that
+    // genuinely need to be there.
+    missingFields: fields.filter(
+      (field) =>
+        !columnForField.has(field.name) &&
+        !field.visibleWhen &&
+        !(template.defaults as Record<string, unknown>)[field.name],
+    ),
   };
 }
 

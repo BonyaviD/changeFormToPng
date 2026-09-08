@@ -29,10 +29,13 @@ import { toPersianDigits } from "@/lib/persian";
 import { downloadCertificate, type ExportFormat } from "@/lib/render/export";
 import { certificateRepository, notifyArchiveChanged } from "@/lib/storage";
 import type { CertificateRecord } from "@/lib/storage";
+import { useSettings } from "@/hooks/use-settings";
+import { buildArtworkContext } from "@/lib/settings/artwork-context";
 import { findTemplate } from "@/lib/templates/registry";
 
 export function ArchiveTable() {
   const { records, loading } = useArchive();
+  const { settings } = useSettings();
   const [query, setQuery] = useState("");
   const [previewed, setPreviewed] = useState<CertificateRecord | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -60,7 +63,7 @@ export function ArchiveTable() {
       await downloadCertificate(
         template,
         record.values,
-        { serial: record.serial },
+        buildArtworkContext(settings, record.serial),
         format,
       );
     } catch (error) {
@@ -191,7 +194,7 @@ export function ArchiveTable() {
               <CertificateStage
                 template={previewTemplate}
                 values={previewed.values}
-                context={{ serial: previewed.serial }}
+                context={buildArtworkContext(settings, previewed.serial)}
               />
             </div>
           ) : null}

@@ -12,7 +12,9 @@ import { TemplateForm } from "@/components/form/template-form";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toPersianDigits } from "@/lib/persian";
+import { useSettings } from "@/hooks/use-settings";
 import { generateSerial } from "@/lib/serial";
+import { buildArtworkContext } from "@/lib/settings/artwork-context";
 import { downloadCertificate, type ExportFormat } from "@/lib/render/export";
 import { certificateRepository, notifyArchiveChanged } from "@/lib/storage";
 import { DEFAULT_TEMPLATE_ID, getTemplate } from "@/lib/templates/registry";
@@ -23,6 +25,7 @@ type Values = Record<string, unknown>;
 export function IssueWorkspace() {
   const [templateId, setTemplateId] = useState(DEFAULT_TEMPLATE_ID);
   const template = useMemo(() => getTemplate(templateId), [templateId]);
+  const { settings } = useSettings();
 
   /**
    * The tracking number for this form session. It is minted on first use rather
@@ -39,7 +42,7 @@ export function IssueWorkspace() {
     mode: "onTouched",
   });
 
-  const { control, handleSubmit, reset, formState } = form;
+  const { control, handleSubmit, reset, setValue, formState } = form;
   // `useWatch` returns a value rather than a subscription function, which keeps
   // this component memoizable — `watch()` opts the whole tree out.
   const values = useWatch({ control }) as Values;
@@ -52,7 +55,10 @@ export function IssueWorkspace() {
   }, [serial]);
 
 
-  const context: ArtworkContext = useMemo(() => ({ serial }), [serial]);
+  const context: ArtworkContext = useMemo(
+    () => buildArtworkContext(settings, serial),
+    [settings, serial],
+  );
 
   /** Clears the identity of the current certificate without touching the form. */
   function startNewCertificate() {
@@ -145,6 +151,7 @@ export function IssueWorkspace() {
               <TemplateForm
                 template={template}
                 control={control}
+                setValue={setValue}
                 values={values}
                 errors={formState.errors as Record<string, { message?: string }>}
               />

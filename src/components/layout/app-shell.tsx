@@ -1,6 +1,6 @@
 "use client";
 
-import { Archive, BadgeCheck, FileSignature, Layers } from "lucide-react";
+import { Archive, BadgeCheck, FileSignature, Layers, Settings } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
@@ -13,6 +13,7 @@ const NAV_ITEMS = [
   { href: "/bulk", label: "صدور گروهی", icon: Layers },
   { href: "/history", label: "آرشیو", icon: Archive },
   { href: "/verify", label: "استعلام", icon: BadgeCheck },
+  { href: "/settings", label: "تنظیمات", icon: Settings },
 ] as const;
 
 function isActive(pathname: string, href: string) {

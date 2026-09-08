@@ -3,15 +3,17 @@ import type { CSSProperties, ReactNode } from "react";
 import { formatJalali } from "@/lib/jalali";
 import { toPersianDigits } from "@/lib/persian";
 
+import type { ArtworkContext } from "../types";
 import {
   ASSETS,
   BODY,
   CANVAS,
   HEADER,
   META_BLOCK,
+  ORGANISATION,
   PAPER,
-  PRIMARY_SIGNATORY,
   SIGNATURE,
+  SIGNATURE_INK,
   TITLE_BLOCK,
 } from "./layout";
 import { ATTENDANCE_LABEL, HONORIFIC, type HalalTrainingValues } from "./schema";
@@ -54,18 +56,23 @@ function CentredBlock({
 /* Header                                                                      */
 /* -------------------------------------------------------------------------- */
 
+/**
+ * One of the two side blocks: a logo with up to two caption lines beneath it.
+ *
+ * The captions are sized and baselined to match the text baked into the central
+ * emblem artwork, so the three blocks read as one header rather than three
+ * separately-styled ones.
+ */
 function HeaderColumn({
   centreX,
   logo,
   logoWidth,
-  organisation,
-  unit,
+  lines,
 }: {
   centreX: number;
   logo: string;
   logoWidth: number;
-  organisation: string;
-  unit: string;
+  lines: string[];
 }) {
   return (
     <>
@@ -80,17 +87,20 @@ function HeaderColumn({
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={logo} alt="" style={{ width: "100%", display: "block" }} />
       </div>
+
       <CentredBlock
         centreX={centreX}
         top={HEADER.captionTop}
         width={HEADER.captionWidth}
         style={{
+          fontFamily: "var(--font-naskh)",
           fontSize: HEADER.captionFontSize,
           lineHeight: `${HEADER.captionLineHeight}px`,
         }}
       >
-        <div>{organisation}</div>
-        <div>{unit}</div>
+        {lines.filter(Boolean).map((line, index) => (
+          <div key={index}>{line}</div>
+        ))}
       </CentredBlock>
     </>
   );
@@ -100,32 +110,42 @@ function HeaderColumn({
 /* Signature                                                                   */
 /* -------------------------------------------------------------------------- */
 
+/**
+ * Name, role and scanned signature, all centred on the same axis. The ink is
+ * drawn behind the name so it reads as a signature over the printed line.
+ */
 function SignatureBlock({
   centreX,
   name,
   title,
-  withInk,
+  signatureImage,
 }: {
   centreX: number;
   name: string;
   title: string;
-  withInk: boolean;
+  signatureImage?: string;
 }) {
   return (
     <>
-      {withInk ? (
+      {signatureImage ? (
         <div
           style={{
             position: "absolute",
-            left: centreX - SIGNATURE.image.width / 2 + SIGNATURE.image.offsetX,
-            top: SIGNATURE.nameTop + SIGNATURE.image.offsetY,
-            width: SIGNATURE.image.width,
-            transform: `rotate(${SIGNATURE.image.rotation}deg)`,
+            left: centreX,
+            top: SIGNATURE_INK.centreY,
+            height: SIGNATURE_INK.height,
+            // Auto width lets the cropped scan keep its own proportions; the
+            // translate centres it on the point regardless of what that is.
+            transform: `translate(-50%, -50%) rotate(${SIGNATURE_INK.rotation}deg)`,
             transformOrigin: "center",
           }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={ASSETS.signature} alt="" style={{ width: "100%", display: "block" }} />
+          <img
+            src={signatureImage}
+            alt=""
+            style={{ height: "100%", width: "auto", display: "block" }}
+          />
         </div>
       ) : null}
 
@@ -133,7 +153,12 @@ function SignatureBlock({
         centreX={centreX}
         top={SIGNATURE.nameTop}
         width={SIGNATURE.blockWidth}
-        style={{ fontSize: SIGNATURE.nameFontSize, lineHeight: "36px" }}
+        style={{
+          fontFamily: "var(--font-naskh)",
+          fontSize: SIGNATURE.nameFontSize,
+          fontWeight: 700,
+          lineHeight: `${SIGNATURE.nameLineHeight}px`,
+        }}
       >
         {name}
       </CentredBlock>
@@ -141,7 +166,11 @@ function SignatureBlock({
         centreX={centreX}
         top={SIGNATURE.titleTop}
         width={SIGNATURE.blockWidth}
-        style={{ fontSize: SIGNATURE.titleFontSize, lineHeight: "32px" }}
+        style={{
+          fontFamily: "var(--font-naskh)",
+          fontSize: SIGNATURE.titleFontSize,
+          lineHeight: `${SIGNATURE.titleLineHeight}px`,
+        }}
       >
         {title}
       </CentredBlock>
@@ -153,19 +182,32 @@ function SignatureBlock({
 /* Artwork                                                                     */
 /* -------------------------------------------------------------------------- */
 
-export function HalalTrainingArtwork({ values }: { values: HalalTrainingValues }) {
+export function HalalTrainingArtwork({
+  values,
+  context,
+}: {
+  values: HalalTrainingValues;
+  context: ArtworkContext;
+}) {
   const honorific = HONORIFIC[values.gender] ?? "";
   const attendance = ATTENDANCE_LABEL[values.attendance] ?? "";
   const duration = values.duration?.trim();
+  const dual = values.dualSignature;
+
+  const signatureFor = (name: string) =>
+    context.signatureImages?.[name?.trim() ?? ""] ?? undefined;
 
   return (
     <div
       className="certificate-surface"
+      lang="fa"
       style={{
         position: "relative",
         width: CANVAS.width,
         height: CANVAS.height,
         direction: "rtl",
+        // Nastaliq is the default for the headings; everything meant to be read
+        // opts into the Naskh face explicitly.
         fontFamily: "var(--font-nastaliq)",
         fontFeatureSettings: '"ss01"',
         overflow: "hidden",
@@ -197,13 +239,17 @@ export function HalalTrainingArtwork({ values }: { values: HalalTrainingValues }
         }}
       />
 
-      {/* --- Header ---------------------------------------------------- */}
+      {/* --- Header ------------------------------------------------------- */}
+      {/*
+        Right block belongs to the co-signing body: on a single-signature
+        certificate it carries the organisation alone, and the directorate line
+        appears only when a second signatory is actually named.
+      */}
       <HeaderColumn
         centreX={HEADER.columns.right}
         logo={ASSETS.logoFda}
         logoWidth={HEADER.fdaLogoWidth}
-        organisation="سازمان غذا و دارو"
-        unit="اداره کل امور دارو و مواد تحت کنترل"
+        lines={[ORGANISATION, dual ? values.secondUnitCaption?.trim() || "" : ""]}
       />
 
       <div
@@ -226,8 +272,7 @@ export function HalalTrainingArtwork({ values }: { values: HalalTrainingValues }
         centreX={HEADER.columns.left}
         logo={ASSETS.logoHalal}
         logoWidth={HEADER.halalLogoWidth}
-        organisation="سازمان غذا و دارو"
-        unit="مرکز تحقیقات حلال جمهوری اسلامی ایران"
+        lines={[ORGANISATION, HEADER.halalUnit]}
       />
 
       {/* --- Title -------------------------------------------------------- */}
@@ -253,7 +298,11 @@ export function HalalTrainingArtwork({ values }: { values: HalalTrainingValues }
         centreX={META_BLOCK.centreX}
         top={META_BLOCK.top}
         width={META_BLOCK.width}
-        style={{ fontSize: META_BLOCK.fontSize }}
+        style={{
+          fontFamily: "var(--font-naskh)",
+          fontSize: META_BLOCK.fontSize,
+          lineHeight: `${META_BLOCK.lineHeight}px`,
+        }}
       >
         {`شماره: ${toPersianDigits(values.courseCode)}`}
       </CentredBlock>
@@ -261,7 +310,11 @@ export function HalalTrainingArtwork({ values }: { values: HalalTrainingValues }
         centreX={META_BLOCK.centreX}
         top={META_BLOCK.top + META_BLOCK.lineGap}
         width={META_BLOCK.width}
-        style={{ fontSize: META_BLOCK.fontSize }}
+        style={{
+          fontFamily: "var(--font-naskh)",
+          fontSize: META_BLOCK.fontSize,
+          lineHeight: `${META_BLOCK.lineHeight}px`,
+        }}
       >
         {`تاریخ صدور: ${formatJalali(values.issueDate)}`}
       </CentredBlock>
@@ -277,49 +330,49 @@ export function HalalTrainingArtwork({ values }: { values: HalalTrainingValues }
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
+          fontFamily: "var(--font-naskh)",
           fontSize: BODY.fontSize,
           lineHeight: `${BODY.lineHeight}px`,
           textAlign: "center",
         }}
       >
         <p style={{ margin: 0 }}>
-        بدینوسیله گواهی می‌شود {honorific}{" "}
-        <strong style={{ fontWeight: 700 }}>{values.fullName}</strong> فرزند{" "}
-        <strong style={{ fontWeight: 700 }}>{values.fatherName}</strong> دارای کد ملی{" "}
-        <strong style={{ fontWeight: 700 }}>{toPersianDigits(values.nationalId)}</strong> در
-        دوره آموزشی{" "}
-        <strong style={{ fontWeight: 700 }}>{values.courseTitle}</strong> که در تاریخ{" "}
-        {formatJalali(values.heldDate)} به صورت {attendance}
-        {duration ? ` و به مدت ${toPersianDigits(duration)}` : ""} برگزار گردیده شرکت و
-        دوره را با موفقیت به پایان رسانیده است.
+          بدینوسیله گواهی می‌شود {honorific}{" "}
+          <strong style={{ fontWeight: 700 }}>{values.fullName}</strong> فرزند{" "}
+          <strong style={{ fontWeight: 700 }}>{values.fatherName}</strong> دارای کد ملی{" "}
+          <strong style={{ fontWeight: 700 }}>{toPersianDigits(values.nationalId)}</strong>{" "}
+          در دوره آموزشی{" "}
+          <strong style={{ fontWeight: 700 }}>{values.courseTitle}</strong> که در تاریخ{" "}
+          {formatJalali(values.heldDate)} به صورت {attendance}
+          {duration ? ` و به مدت ${toPersianDigits(duration)}` : ""} برگزار گردیده شرکت و
+          دوره را با موفقیت به پایان رسانیده است.
         </p>
       </div>
 
       {/* --- Signatures --------------------------------------------------- */}
-      {values.dualSignature ? (
+      {dual ? (
         <>
           <SignatureBlock
             centreX={SIGNATURE.dualCentreX.primary}
-            name={PRIMARY_SIGNATORY.name}
-            title={PRIMARY_SIGNATORY.title}
-            withInk
+            name={values.primarySignatoryName}
+            title={values.primarySignatoryTitle}
+            signatureImage={signatureFor(values.primarySignatoryName)}
           />
           <SignatureBlock
             centreX={SIGNATURE.dualCentreX.secondary}
             name={values.secondSignatoryName || ""}
             title={values.secondSignatoryTitle || ""}
-            withInk={false}
+            signatureImage={signatureFor(values.secondSignatoryName || "")}
           />
         </>
       ) : (
         <SignatureBlock
           centreX={SIGNATURE.soloCentreX}
-          name={PRIMARY_SIGNATORY.name}
-          title={PRIMARY_SIGNATORY.title}
-          withInk
+          name={values.primarySignatoryName}
+          title={values.primarySignatoryTitle}
+          signatureImage={signatureFor(values.primarySignatoryName)}
         />
       )}
-
     </div>
   );
 }

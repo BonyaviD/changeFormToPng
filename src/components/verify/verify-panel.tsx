@@ -11,6 +11,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { dateToJalali, formatJalaliLong } from "@/lib/jalali";
 import { certificateRepository, type CertificateRecord } from "@/lib/storage";
+import { useSettings } from "@/hooks/use-settings";
+import { buildArtworkContext } from "@/lib/settings/artwork-context";
 import { findTemplate } from "@/lib/templates/registry";
 import { cn } from "@/lib/utils";
 
@@ -22,6 +24,7 @@ type LookupState =
 
 export function VerifyPanel() {
   const searchParams = useSearchParams();
+  const { settings } = useSettings();
   // A `?serial=` link seeds the field directly. (This subtree is inside a
   // Suspense boundary, so the client owns the render and there is nothing to
   // reconcile against.)
@@ -120,7 +123,7 @@ export function VerifyPanel() {
                 <CertificateStage
                   template={template}
                   values={state.record.values}
-                  context={{ serial: state.record.serial }}
+                  context={buildArtworkContext(settings, state.record.serial)}
                 />
               </div>
             </div>

@@ -1,7 +1,13 @@
 "use client";
 
-import { Controller, type Control, type FieldValues } from "react-hook-form";
+import {
+  Controller,
+  type Control,
+  type FieldValues,
+  type UseFormSetValue,
+} from "react-hook-form";
 
+import { ComboboxField } from "@/components/form/combobox-field";
 import { JalaliDateField } from "@/components/form/jalali-date-field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,6 +22,8 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { digitsOnly, sanitizePersianInput } from "@/lib/persian";
+import { fieldOptions } from "@/lib/settings/options";
+import type { AppSettings } from "@/lib/settings/types";
 import type { FieldDefinition } from "@/lib/templates/types";
 import { cn } from "@/lib/utils";
 
@@ -28,13 +36,19 @@ import { cn } from "@/lib/utils";
 export function FieldControl<TValues extends FieldValues>({
   field,
   control,
+  setValue,
+  settings,
   error,
 }: {
   field: FieldDefinition;
   control: Control<TValues>;
+  /** Needed so a catalogue pick can fill its companion fields. */
+  setValue: UseFormSetValue<TValues>;
+  settings: AppSettings;
   error?: string;
 }) {
   const controlId = `field-${field.name}`;
+  const options = fieldOptions(field, settings);
   const describedBy = error
     ? `${controlId}-error`
     : field.hint
@@ -74,7 +88,7 @@ export function FieldControl<TValues extends FieldValues>({
                   onValueChange={rhf.onChange}
                   className="flex flex-wrap gap-2"
                 >
-                  {field.options?.map((option) => {
+                  {options.map((option) => {
                     const optionId = `${controlId}-${option.value}`;
                     const checked = rhf.value === option.value;
                     return (
@@ -96,6 +110,31 @@ export function FieldControl<TValues extends FieldValues>({
                 </RadioGroup>
               );
 
+            case "combobox":
+              return (
+                <ComboboxField
+                  id={controlId}
+                  value={(rhf.value as string) ?? ""}
+                  options={options}
+                  onChange={rhf.onChange}
+                  onSelectOption={(option) => {
+                    // Choosing a catalogue entry also writes whatever it knows
+                    // about its companions — a course brings its code with it.
+                    for (const [target, filled] of Object.entries(option.fills ?? {})) {
+                      setValue(
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        target as any,
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        filled as any,
+                        { shouldValidate: true, shouldDirty: true },
+                      );
+                    }
+                  }}
+                  placeholder={field.placeholder}
+                  invalid={Boolean(error)}
+                />
+              );
+
             case "select":
               return (
                 <Select value={(rhf.value as string) ?? ""} onValueChange={rhf.onChange}>
@@ -103,7 +142,7 @@ export function FieldControl<TValues extends FieldValues>({
                     <SelectValue placeholder={field.placeholder} />
                   </SelectTrigger>
                   <SelectContent>
-                    {field.options?.map((option) => (
+                    {options.map((option) => (
                       <SelectItem key={option.value} value={option.value}>
                         {option.label}
                       </SelectItem>

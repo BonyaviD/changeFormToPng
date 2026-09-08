@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { parseJalali } from "@/lib/jalali";
+import { parseJalali, type JalaliDate } from "@/lib/jalali";
 import { toLatinDigits } from "@/lib/persian";
 
 export const GENDER_OPTIONS = [
@@ -37,9 +37,14 @@ const jalaliDate = (label: string) =>
     .min(1, `${label} الزامی است`)
     .refine((value) => parseJalali(value) !== null, `${label} معتبر نیست`);
 
+/** Orders two Jalali dates without going through the Gregorian calendar. */
+function compareJalali(a: JalaliDate, b: JalaliDate): number {
+  return a.year - b.year || a.month - b.month || a.day - b.day;
+}
+
 export const halalTrainingSchema = z
   .object({
-    courseTitle: requiredText("عنوان دوره").max(120, "عنوان دوره طولانی است"),
+    courseTitle: requiredText("عنوان دوره").max(160, "عنوان دوره طولانی است"),
     courseCode: requiredText("کد دوره").max(40, "کد دوره طولانی است"),
     fullName: requiredText("نام و نام خانوادگی").max(80, "نام طولانی است"),
     fatherName: requiredText("نام پدر").max(60, "نام پدر طولانی است"),
@@ -59,11 +64,28 @@ export const halalTrainingSchema = z
     attendance: z.enum(["in-person", "remote"], {
       required_error: "وضعیت برگزاری را انتخاب کنید",
     }),
+
+    primarySignatoryName: requiredText("نام امضاکننده").max(60),
+    primarySignatoryTitle: requiredText("سمت امضاکننده").max(120),
+
     dualSignature: z.boolean().default(false),
     secondSignatoryName: z.string().trim().max(60).optional().default(""),
     secondSignatoryTitle: z.string().trim().max(120).optional().default(""),
+    /** Second line under the right-hand logo; only printed on a dual signature. */
+    secondUnitCaption: z.string().trim().max(120).optional().default(""),
   })
   .superRefine((values, ctx) => {
+    // A certificate cannot be issued before the course it certifies took place.
+    const issued = parseJalali(values.issueDate);
+    const held = parseJalali(values.heldDate);
+    if (issued && held && compareJalali(issued, held) < 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["issueDate"],
+        message: "تاریخ صدور نمی‌تواند قبل از تاریخ برگزاری باشد",
+      });
+    }
+
     // The second signature block only exists when the switch is on, so its
     // fields are conditionally required rather than always required.
     if (!values.dualSignature) return;

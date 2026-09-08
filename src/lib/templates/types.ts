@@ -18,12 +18,26 @@ export type FieldKind =
   | "jalali-date"
   | "radio"
   | "select"
+  | "combobox"
   | "switch";
 
 export interface FieldOption {
   value: string;
   label: string;
+  /**
+   * Other fields to write when this option is chosen — how picking a course
+   * from the catalogue also fills in its certificate code, and picking a
+   * signatory fills in their title.
+   */
+  fills?: Record<string, string>;
 }
+
+/**
+ * Where a field's options come from when they are not fixed by the template.
+ * These name catalogues owned by the settings page, so the operator can extend
+ * a list without a code change.
+ */
+export type FieldOptionSource = "courses" | "signatories" | "unitCaptions";
 
 export interface FieldDefinition {
   /** Must match a key of the template's schema. */
@@ -34,6 +48,14 @@ export interface FieldDefinition {
   /** Helper text rendered under the control. */
   hint?: string;
   options?: readonly FieldOption[];
+  /** Resolve the option list from the settings catalogue at render time. */
+  optionsSource?: FieldOptionSource;
+  /**
+   * Maps an attribute of the chosen catalogue entry onto another field of this
+   * form — `{ code: "courseCode" }` is what makes picking a course fill in its
+   * certificate number. Used together with `optionsSource`.
+   */
+  optionsFillMap?: Readonly<Record<string, string>>;
   /** Columns the control spans in the two-column form grid. */
   span?: 1 | 2;
   /** Hide the control unless the predicate holds (e.g. the second signatory). */
@@ -66,6 +88,12 @@ export interface ArtworkContext {
    * artwork so a design can stamp it; this template does not.
    */
   serial?: string;
+  /**
+   * Scanned signatures from the settings catalogue, keyed by signatory name.
+   * A certificate records the printed *name*, not the image bytes, so a
+   * re-issue picks up whatever signature is on file for that person today.
+   */
+  signatureImages?: Readonly<Record<string, string>>;
 }
 
 export interface RecordSummary {

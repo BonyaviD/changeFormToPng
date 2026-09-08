@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { AppShell } from "@/components/layout/app-shell";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
-import { nastaliqFont, uiFont } from "@/lib/fonts";
+import { nastaliqFont, naskhFont, uiFont } from "@/lib/fonts";
 
 import "./globals.css";
 
@@ -21,7 +21,7 @@ export default function RootLayout({
       lang="fa"
       dir="rtl"
       suppressHydrationWarning
-      className={`${uiFont.variable} ${nastaliqFont.variable}`}
+      className={`${uiFont.variable} ${nastaliqFont.variable} ${naskhFont.variable}`}
     >
       <body>
         <ThemeProvider

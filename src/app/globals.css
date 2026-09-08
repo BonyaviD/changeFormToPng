@@ -167,6 +167,7 @@
 
   --font-sans: var(--font-ui), ui-sans-serif, system-ui, sans-serif;
   --font-nastaliq: var(--font-nastaliq), "IranNastaliq", serif;
+  --font-naskh: var(--font-naskh), "Amiri", serif;
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
