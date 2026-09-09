@@ -1,7 +1,15 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Download, FileImage, FileText, RotateCcw, Save, Wand2 } from "lucide-react";
+import {
+  Download,
+  FileImage,
+  FileText,
+  PenLine,
+  RotateCcw,
+  Save,
+  Wand2,
+} from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
@@ -11,6 +19,7 @@ import { TemplatePicker } from "@/components/certificate/template-picker";
 import { TemplateForm } from "@/components/form/template-form";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { toPersianDigits } from "@/lib/persian";
 import { useSettings } from "@/hooks/use-settings";
 import { generateSerial } from "@/lib/serial";
@@ -59,6 +68,16 @@ export function IssueWorkspace() {
     () => buildArtworkContext(settings, serial),
     [settings, serial],
   );
+
+  // No signature ships with the app, so a fresh browser prints unsigned
+  // certificates until one is uploaded. Say so rather than let it slip out.
+  const missingSignatures = [
+    values.primarySignatoryName as string | undefined,
+    values.dualSignature ? (values.secondSignatoryName as string | undefined) : undefined,
+  ]
+    .map((name) => name?.trim())
+    .filter((name): name is string => Boolean(name))
+    .filter((name) => !context.signatureImages?.[name]);
 
   /** Clears the identity of the current certificate without touching the form. */
   function startNewCertificate() {
@@ -170,6 +189,18 @@ export function IssueWorkspace() {
             </div>
           </div>
         </Card>
+
+        {missingSignatures.length > 0 ? (
+          <Alert>
+            <PenLine className="size-4" />
+            <AlertTitle>تصویر امضا ثبت نشده است</AlertTitle>
+            <AlertDescription>
+              برای {missingSignatures.join(" و ")} امضایی در این مرورگر ذخیره نشده،
+              بنابراین گواهی بدون امضا صادر می‌شود. از صفحه‌ی تنظیمات، بخش
+              امضاکنندگان، تصویر امضا را بارگذاری کنید.
+            </AlertDescription>
+          </Alert>
+        ) : null}
 
         <div className="flex flex-wrap items-center gap-2">
           <Button onClick={onExport("png")} disabled={busy !== null}>

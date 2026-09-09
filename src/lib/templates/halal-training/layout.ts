@@ -125,17 +125,19 @@ export const SIGNATURE = {
  * The signature mark.
  *
  * Signature scans are mostly transparent sheet, so sizing the `<img>` by its
- * own dimensions positions the file rather than the strokes — which is how the
- * signature ended up printed across the last line of the body text. Every
- * signature is therefore stored cropped to its ink (the bundled scan went from
- * 3464x3464 to 1389x2067, and uploads are cropped the same way), and the mark
- * is placed by its centre at a fixed height, letting the image's own aspect
- * ratio decide the width.
+ * own dimensions positions the file rather than the strokes. Every signature is
+ * stored cropped to its ink, and the mark is placed by its centre at a fixed
+ * height, letting the image's own aspect ratio decide the width.
+ *
+ * It is centred low enough to run across the printed name and role rather than
+ * float in clear space above them. That is deliberate: a signature sitting on
+ * blank paper can be cut out of an issued certificate and reused, whereas one
+ * crossing the text takes the text with it.
  */
 export const SIGNATURE_INK = {
   /** Height of the ink, before rotation. */
-  height: 138,
+  height: 142,
   rotation: 60,
-  /** Centre of the mark; it deliberately overlaps the printed name. */
-  centreY: 640,
+  /** Centre of the mark. Sits on the name line, not above it. */
+  centreY: 652,
 } as const;
