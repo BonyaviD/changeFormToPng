@@ -40,10 +40,12 @@ function MercedesStar({ className }: { className?: string }) {
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden="true"
     >
-      <circle cx="24" cy="24" r="20" stroke="currentColor" strokeWidth="2" />
-      <path d="M24 5.5 22.3 22.4 24 24l1.7-1.6L24 5.5Z" fill="currentColor" />
-      <path d="m7.8 33.6 14.4-8.8L24 24l-1.1 2.2-15.1 7.4Z" fill="currentColor" />
-      <path d="m40.2 33.6-14.4-8.8L24 24l1.1 2.2 15.1 7.4Z" fill="currentColor" />
+      <circle cx="24" cy="24" r="20" stroke="currentColor" strokeWidth="2.6" />
+      <circle cx="24" cy="24" r="17.5" stroke="currentColor" strokeWidth="0.7" opacity="0.38" />
+      <path d="M24 4.8 21.9 22.2 24 24l2.1-1.8L24 4.8Z" fill="currentColor" />
+      <path d="m7 34.1 15-9.7 2-0.4-1.2 2.7L7 34.1Z" fill="currentColor" />
+      <path d="m41 34.1-15-9.7-2-0.4 1.2 2.7L41 34.1Z" fill="currentColor" />
+      <circle cx="24" cy="24" r="2.1" fill="currentColor" />
     </svg>
   );
 }

@@ -381,14 +381,66 @@
   }
 
   .f1 .app-brand-mark {
+    position: relative;
+    overflow: hidden;
+    width: 2.7rem;
+    height: 2.7rem;
+    flex: 0 0 2.7rem;
     border: 1px solid rgb(220 228 231 / 52%);
     border-radius: 50%;
-    background: radial-gradient(circle at 34% 28%, #263035, #090c0e 72%);
-    color: #e1e7e9;
+    background:
+      radial-gradient(circle at 34% 25%, rgb(151 169 176 / 48%), transparent 27%),
+      radial-gradient(circle at 50% 55%, #28343a, #080b0d 73%);
+    color: #f2f8fa;
     box-shadow:
-      inset 0 0 0 2px rgb(0 0 0 / 58%),
-      0 0 0 1px rgb(255 255 255 / 9%),
-      0 8px 26px rgb(0 210 190 / 18%);
+      inset 0 0 0 2px rgb(0 0 0 / 64%),
+      inset 0 0 13px rgb(209 231 235 / 13%),
+      0 0 0 1px rgb(255 255 255 / 11%),
+      0 0 17px rgb(0 210 190 / 24%),
+      0 9px 30px rgb(0 0 0 / 55%);
+    animation: f1-logo-breathe 3.8s ease-in-out infinite;
+  }
+
+  .f1 .app-brand-mark::before {
+    position: absolute;
+    z-index: 2;
+    top: -24%;
+    left: -72%;
+    width: 42%;
+    height: 148%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgb(255 255 255 / 86%) 48%,
+      rgb(104 255 241 / 58%) 62%,
+      transparent
+    );
+    content: "";
+    filter: blur(0.4px);
+    transform: skewX(-19deg);
+    animation: f1-logo-shine 4.2s cubic-bezier(0.22, 0.8, 0.24, 1) infinite;
+    pointer-events: none;
+  }
+
+  .f1 .app-brand-mark::after {
+    position: absolute;
+    z-index: 0;
+    inset: 3px;
+    border: 1px solid rgb(213 239 241 / 17%);
+    border-radius: inherit;
+    background: linear-gradient(145deg, rgb(255 255 255 / 8%), transparent 44%);
+    content: "";
+    pointer-events: none;
+  }
+
+  .f1 .app-brand:hover .app-brand-mark {
+    color: #ffffff;
+    box-shadow:
+      inset 0 0 0 2px rgb(0 0 0 / 64%),
+      inset 0 0 15px rgb(209 231 235 / 18%),
+      0 0 0 1px rgb(255 255 255 / 18%),
+      0 0 25px rgb(0 210 190 / 38%),
+      0 10px 32px rgb(0 0 0 / 58%);
   }
 
   .f1 .app-default-mark {
@@ -401,9 +453,13 @@
 
   .f1 .f1-brand-star {
     display: block;
-    width: 1.72rem;
-    height: 1.72rem;
-    filter: drop-shadow(0 0 5px rgb(255 255 255 / 18%));
+    position: relative;
+    z-index: 1;
+    width: 2rem;
+    height: 2rem;
+    filter:
+      drop-shadow(0 1px 0 rgb(255 255 255 / 65%))
+      drop-shadow(0 0 6px rgb(0 210 190 / 28%));
   }
 
   .f1 .app-nav a[aria-current="page"] {
@@ -447,6 +503,35 @@
     background: linear-gradient(90deg, rgb(0 210 190 / 3%), rgb(5 7 8 / 62%), rgb(137 80 216 / 3%));
   }
 
+  @keyframes f1-logo-shine {
+    0%,
+    38% {
+      opacity: 0;
+      transform: translateX(0) skewX(-19deg);
+    }
+    46% {
+      opacity: 0.9;
+    }
+    64% {
+      opacity: 0;
+      transform: translateX(410%) skewX(-19deg);
+    }
+    100% {
+      opacity: 0;
+      transform: translateX(410%) skewX(-19deg);
+    }
+  }
+
+  @keyframes f1-logo-breathe {
+    0%,
+    100% {
+      filter: brightness(0.96);
+    }
+    50% {
+      filter: brightness(1.13);
+    }
+  }
+
   .certificate-surface {
     --background: #ffffff;
     --foreground: #000000;
@@ -465,5 +550,17 @@
 @media (max-width: 760px) {
   .f1 .f1-mode-badge {
     display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .f1 .app-brand-mark,
+  .f1 .app-brand-mark::before {
+    animation: none;
+  }
+
+  .f1 .app-brand-mark::before {
+    opacity: 0.16;
+    transform: translateX(205%) skewX(-19deg);
   }
 }

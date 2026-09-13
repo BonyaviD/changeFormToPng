@@ -52,6 +52,7 @@ test("login HTML escapes input and limits the password toggle to a nonce", () =>
   assert.equal(html.includes("/_next/"), false);
   assert.equal(html.includes('type="password"'), true);
   assert.equal(html.includes('id="toggle-password"'), true);
+  assert.equal(html.includes('id="toggle-password-label"'), false);
   assert.equal(html.includes('&lt;script&gt;alert(1)&lt;/script&gt;'), true);
   assert.equal(loginPage("/", "", false, "test-nonce").includes(" disabled"), true);
 });
