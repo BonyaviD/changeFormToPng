@@ -1,6 +1,6 @@
 "use client";
 
-import { Monitor, Moon, Sun } from "lucide-react";
+import { Gauge, Monitor, Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import {
 const OPTIONS = [
   { value: "light", label: "روشن", icon: Sun },
   { value: "dark", label: "تیره", icon: Moon },
+  { value: "f1", label: "فرمول یک", icon: Gauge },
   { value: "system", label: "سیستم", icon: Monitor },
 ] as const;
 
@@ -29,8 +30,9 @@ export function ThemeToggle() {
             CSS rather than by a mounted flag — no hydration guard, no flash of
             the wrong icon.
           */}
-          <Sun className="size-4 dark:hidden" />
+          <Sun className="size-4 dark:hidden f1:hidden" />
           <Moon className="hidden size-4 dark:block" />
+          <Gauge className="hidden size-4 f1:block" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-36">

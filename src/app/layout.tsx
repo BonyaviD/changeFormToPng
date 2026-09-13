@@ -4,6 +4,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { nastaliqFont, naskhFont, uiFont } from "@/lib/fonts";
+import { requireSession } from "@/lib/auth/session";
 
 import "./globals.css";
 
@@ -13,9 +14,12 @@ export const metadata: Metadata = {
     "صدور، بایگانی و استعلام گواهی‌های پایان دوره آموزشی مرکز تحقیقات حلال.",
 };
 
-export default function RootLayout({
+export const dynamic = "force-dynamic";
+
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  await requireSession();
   return (
     <html
       lang="fa"
@@ -28,6 +32,7 @@ export default function RootLayout({
           attribute="class"
           defaultTheme="system"
           enableSystem
+          themes={["light", "dark", "f1"]}
           disableTransitionOnChange
         >
           <AppShell>{children}</AppShell>

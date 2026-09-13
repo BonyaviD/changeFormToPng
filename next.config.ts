@@ -1,14 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /**
-   * The app is fully client-side: every certificate is rendered, rasterised and
-   * stored in the browser. Exporting a static bundle keeps it deployable to any
-   * dumb host (GitHub Pages, a shared drive, an internal IIS folder).
-   */
-  output: "export",
+  // Authentication must run before pages and assets are served. Static export
+  // would bypass the server gate; deploy this app with the Next.js runtime.
+  poweredByHeader: false,
   images: {
-    // `next/image` optimisation needs a server; we ship plain <img> semantics.
     unoptimized: true,
   },
 };
