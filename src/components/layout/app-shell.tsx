@@ -31,6 +31,23 @@ function isActive(pathname: string, href: string) {
   return pathname.startsWith(href);
 }
 
+function MercedesStar({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 48 48"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+    >
+      <circle cx="24" cy="24" r="20" stroke="currentColor" strokeWidth="2" />
+      <path d="M24 5.5 22.3 22.4 24 24l1.7-1.6L24 5.5Z" fill="currentColor" />
+      <path d="m7.8 33.6 14.4-8.8L24 24l-1.1 2.2-15.1 7.4Z" fill="currentColor" />
+      <path d="m40.2 33.6-14.4-8.8L24 24l1.1 2.2 15.1 7.4Z" fill="currentColor" />
+    </svg>
+  );
+}
+
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
 
@@ -41,7 +58,8 @@ export function AppShell({ children }: { children: ReactNode }) {
         <div className="mx-auto flex h-16 w-full max-w-[1400px] items-center gap-6 px-4 sm:px-6">
           <Link href="/" className="app-brand flex items-center gap-2.5">
             <span className="app-brand-mark bg-primary text-primary-foreground grid size-9 place-items-center rounded-lg">
-              <FileSignature className="size-4.5" />
+              <FileSignature className="app-default-mark size-4.5" />
+              <MercedesStar className="f1-brand-star" />
             </span>
             <span className="hidden leading-tight sm:block">
               <span className="block text-sm font-semibold">سامانه صدور گواهی</span>
@@ -52,8 +70,12 @@ export function AppShell({ children }: { children: ReactNode }) {
           </Link>
 
           <span className="f1-mode-badge" aria-hidden="true" dir="ltr">
+            <MercedesStar className="f1-badge-star" />
+            <span className="f1-driver-code">LH</span>
+            <strong>44</strong>
+            <span className="f1-mode-divider" />
             <Gauge className="size-3.5" />
-            <span>RACE MODE</span>
+            <span>SILVER RACE</span>
           </span>
 
           <nav className="app-nav flex flex-1 items-center gap-1 overflow-x-auto">

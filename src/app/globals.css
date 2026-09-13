@@ -124,64 +124,64 @@
   --sidebar-ring: var(--brand-cobalt);
 }
 
-/* Formula racing theme -----------------------------------------------------
- * A purpose-built interface palette. It deliberately stops at the app shell;
- * exported certificates keep their fixed print palette below.
+/* Silver Arrows / LH44 racing theme ----------------------------------------
+ * Turquoise, polished silver and Hamilton purple shape the application shell.
+ * Exported certificates keep their fixed print palette below.
  * ------------------------------------------------------------------------- */
 .f1 {
   color-scheme: dark;
 
-  --radius: 0.5rem;
+  --radius: 0.75rem;
 
-  --brand-cobalt: #ff2b18;
-  --brand-cobalt-strong: #ff4a3b;
-  --brand-cobalt-soft: #35100d;
-  --brand-parchment: #08090a;
-  --brand-parchment-deep: #17191c;
-  --brand-olive: #d7dadd;
-  --brand-olive-soft: #25282c;
+  --brand-cobalt: #00d2be;
+  --brand-cobalt-strong: #5ff9eb;
+  --brand-cobalt-soft: #063631;
+  --brand-parchment: #050708;
+  --brand-parchment-deep: #14191c;
+  --brand-olive: #a86cff;
+  --brand-olive-soft: #251638;
 
   --background: var(--brand-parchment);
-  --foreground: #f5f6f7;
+  --foreground: #f4f7f8;
 
-  --card: #111315;
+  --card: #0d1113;
   --card-foreground: var(--foreground);
-  --popover: #151719;
+  --popover: #111619;
   --popover-foreground: var(--foreground);
 
   --primary: var(--brand-cobalt);
-  --primary-foreground: #ffffff;
+  --primary-foreground: #001714;
 
-  --secondary: #222529;
-  --secondary-foreground: #f0f1f2;
+  --secondary: #1b2226;
+  --secondary-foreground: #eef2f4;
 
-  --muted: #1c1f22;
-  --muted-foreground: #a5a9ad;
+  --muted: #171d20;
+  --muted-foreground: #98a4aa;
 
-  --accent: #292d31;
+  --accent: var(--brand-olive);
   --accent-foreground: #ffffff;
 
   --destructive: #ff665a;
   --destructive-foreground: #190403;
 
-  --success: #58d39b;
+  --success: #5ee0a0;
   --success-foreground: #061b12;
 
-  --border: #303438;
-  --input: #3b4045;
+  --border: #293136;
+  --input: #354047;
   --ring: var(--brand-cobalt);
 
-  --chart-1: #ff2b18;
-  --chart-2: #f5f6f7;
-  --chart-3: #9fa4a9;
-  --chart-4: #ff7a6d;
-  --chart-5: #5e646a;
+  --chart-1: #00d2be;
+  --chart-2: #b77cff;
+  --chart-3: #e8ecef;
+  --chart-4: #5ff9eb;
+  --chart-5: #717b82;
 
-  --sidebar: #0e1012;
+  --sidebar: #090c0e;
   --sidebar-foreground: var(--foreground);
   --sidebar-primary: var(--brand-cobalt);
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #24272b;
+  --sidebar-primary-foreground: #001714;
+  --sidebar-accent: #182124;
   --sidebar-accent-foreground: #ffffff;
   --sidebar-border: var(--border);
   --sidebar-ring: var(--brand-cobalt);
@@ -250,14 +250,18 @@
 
   .f1 body {
     background-image:
-      radial-gradient(circle at 12% -8%, rgb(255 43 24 / 22%), transparent 30rem),
-      radial-gradient(circle at 92% 115%, rgb(255 43 24 / 10%), transparent 34rem),
+      radial-gradient(circle at 8% -12%, rgb(0 210 190 / 22%), transparent 32rem),
+      radial-gradient(circle at 95% 108%, rgb(132 68 214 / 18%), transparent 36rem),
+      linear-gradient(118deg, transparent 0 67%, rgb(255 255 255 / 2.5%) 67% 67.15%, transparent 67.15%),
       repeating-linear-gradient(
-        135deg,
-        rgb(255 255 255 / 1.8%) 0,
-        rgb(255 255 255 / 1.8%) 1px,
-        transparent 1px,
-        transparent 11px
+        45deg,
+        rgb(255 255 255 / 1.7%) 0 1px,
+        transparent 1px 7px
+      ),
+      repeating-linear-gradient(
+        -45deg,
+        rgb(255 255 255 / 1.25%) 0 1px,
+        transparent 1px 7px
       );
     background-attachment: fixed;
   }
@@ -283,19 +287,48 @@
   .f1 .f1-mode-badge {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
-    border: 1px solid rgb(255 43 24 / 50%);
+    gap: 0.32rem;
+    border: 1px solid rgb(0 210 190 / 42%);
     border-radius: 999px;
     background:
-      linear-gradient(110deg, rgb(255 43 24 / 18%), transparent 55%),
-      #111315;
-    padding: 0.3rem 0.65rem;
+      linear-gradient(105deg, rgb(0 210 190 / 19%), transparent 48%, rgb(139 79 219 / 16%)),
+      #0d1113;
+    padding: 0.26rem 0.68rem 0.26rem 0.34rem;
     color: #ffffff;
     font-family: ui-sans-serif, system-ui, sans-serif;
-    font-size: 0.64rem;
-    font-weight: 800;
-    letter-spacing: 0.14em;
-    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 3%);
+    font-size: 0.61rem;
+    font-weight: 750;
+    letter-spacing: 0.12em;
+    box-shadow:
+      inset 0 0 0 1px rgb(255 255 255 / 4%),
+      0 0 24px rgb(0 210 190 / 9%);
+  }
+
+  .f1 .f1-badge-star {
+    width: 1.42rem;
+    height: 1.42rem;
+    color: #dce3e6;
+    filter: drop-shadow(0 0 5px rgb(255 255 255 / 22%));
+  }
+
+  .f1 .f1-driver-code {
+    color: #bc8cff;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+  }
+
+  .f1 .f1-mode-badge strong {
+    color: #ffffff;
+    font-size: 0.78rem;
+    font-style: italic;
+    letter-spacing: -0.04em;
+  }
+
+  .f1 .f1-mode-divider {
+    width: 1px;
+    height: 0.9rem;
+    margin-inline: 0.18rem;
+    background: linear-gradient(transparent, rgb(255 255 255 / 46%), transparent);
   }
 
   .f1 .app-shell {
@@ -303,67 +336,115 @@
     isolation: isolate;
   }
 
+  .f1 .app-shell::before {
+    position: fixed;
+    z-index: -1;
+    top: 5.75rem;
+    right: -6rem;
+    width: 22rem;
+    height: 22rem;
+    border: 1px solid rgb(255 255 255 / 4%);
+    border-radius: 50%;
+    box-shadow:
+      0 0 0 2.8rem rgb(0 210 190 / 1.8%),
+      0 0 0 5.6rem rgb(255 255 255 / 1.2%),
+      0 0 0 8.4rem rgb(137 77 215 / 1.4%);
+    content: "44";
+    color: rgb(255 255 255 / 2.8%);
+    font-family: ui-sans-serif, system-ui, sans-serif;
+    font-size: 10rem;
+    font-style: italic;
+    font-weight: 950;
+    line-height: 22rem;
+    text-align: center;
+    pointer-events: none;
+  }
+
   .f1 .app-header {
     position: sticky;
-    background: rgb(12 14 16 / 88%);
-    border-color: rgb(255 255 255 / 10%);
-    box-shadow: 0 12px 35px rgb(0 0 0 / 32%);
+    background:
+      linear-gradient(95deg, rgb(0 210 190 / 7%), transparent 34%, rgb(132 68 214 / 5%)),
+      rgb(7 10 11 / 91%);
+    border-color: rgb(207 221 225 / 11%);
+    box-shadow: 0 14px 38px rgb(0 0 0 / 38%);
   }
 
   .f1 .app-header::after {
     position: absolute;
     right: 0;
     bottom: -1px;
-    width: min(44vw, 36rem);
+    width: min(62vw, 48rem);
     height: 2px;
-    background: linear-gradient(90deg, transparent, #ff2b18 35%, #ff2b18);
+    background: linear-gradient(90deg, transparent, #8950d8 24%, #e4e9eb 54%, #00d2be 82%);
     content: "";
-    clip-path: polygon(5% 0, 100% 0, 100% 100%, 0 100%);
+    clip-path: polygon(4% 0, 100% 0, 100% 100%, 0 100%);
   }
 
   .f1 .app-brand-mark {
-    border-radius: 0.4rem;
-    box-shadow: 0 0 0 1px rgb(255 255 255 / 13%), 0 8px 25px rgb(255 43 24 / 24%);
-    transform: skewX(-7deg);
+    border: 1px solid rgb(220 228 231 / 52%);
+    border-radius: 50%;
+    background: radial-gradient(circle at 34% 28%, #263035, #090c0e 72%);
+    color: #e1e7e9;
+    box-shadow:
+      inset 0 0 0 2px rgb(0 0 0 / 58%),
+      0 0 0 1px rgb(255 255 255 / 9%),
+      0 8px 26px rgb(0 210 190 / 18%);
   }
 
-  .f1 .app-brand-mark > svg {
-    transform: skewX(7deg);
+  .f1 .app-default-mark {
+    display: none;
+  }
+
+  .f1-brand-star {
+    display: none;
+  }
+
+  .f1 .f1-brand-star {
+    display: block;
+    width: 1.72rem;
+    height: 1.72rem;
+    filter: drop-shadow(0 0 5px rgb(255 255 255 / 18%));
   }
 
   .f1 .app-nav a[aria-current="page"] {
-    background: linear-gradient(110deg, rgb(255 43 24 / 22%), rgb(255 43 24 / 7%));
-    box-shadow: inset 3px 0 0 #ff2b18;
+    background: linear-gradient(112deg, rgb(0 210 190 / 21%), rgb(0 210 190 / 6%) 64%, rgb(137 80 216 / 9%));
+    box-shadow: inset 3px 0 0 #00d2be, 0 7px 24px rgb(0 210 190 / 7%);
   }
 
   .f1 [data-slot="card"] {
-    border-color: rgb(255 255 255 / 11%);
-    background-color: rgb(17 19 21 / 94%);
-    background-image: linear-gradient(
-      90deg,
-      #ff2b18 0,
-      #ff2b18 3.5rem,
-      rgb(255 43 24 / 26%) 3.5rem,
-      transparent 8rem
-    );
+    border-color: rgb(210 225 229 / 11%);
+    background-color: rgb(13 17 19 / 94%);
+    background-image:
+      linear-gradient(90deg, #00d2be 0 23%, #dfe6e8 43% 57%, #8950d8 77% 100%),
+      linear-gradient(145deg, rgb(255 255 255 / 2.8%), transparent 28%);
     background-repeat: no-repeat;
-    background-size: 100% 2px;
-    box-shadow: 0 18px 50px rgb(0 0 0 / 25%);
+    background-position: top, center;
+    background-size: 100% 2px, 100% 100%;
+    box-shadow: 0 20px 55px rgb(0 0 0 / 29%);
   }
 
   .f1 [data-slot="button"][data-variant="default"] {
-    box-shadow: 0 7px 20px rgb(255 43 24 / 18%);
+    border-color: rgb(103 255 241 / 35%);
+    background-image: linear-gradient(112deg, #00d2be, #37e2d2 72%, #9bfdf3);
+    box-shadow: 0 8px 24px rgb(0 210 190 / 17%);
   }
 
   .f1 [data-slot="input"],
   .f1 [data-slot="textarea"],
   .f1 [data-slot="select-trigger"] {
-    background-color: rgb(0 0 0 / 18%);
+    border-color: rgb(187 210 215 / 17%);
+    background-color: rgb(0 0 0 / 22%);
+  }
+
+  .f1 [data-slot="input"]:focus-visible,
+  .f1 [data-slot="textarea"]:focus-visible,
+  .f1 [data-slot="select-trigger"]:focus-visible {
+    box-shadow: 0 0 0 1px rgb(0 210 190 / 23%), 0 0 22px rgb(0 210 190 / 8%);
   }
 
   .f1 .app-footer {
-    border-color: rgb(255 255 255 / 8%);
-    background: rgb(8 9 10 / 45%);
+    border-color: rgb(255 255 255 / 7%);
+    background: linear-gradient(90deg, rgb(0 210 190 / 3%), rgb(5 7 8 / 62%), rgb(137 80 216 / 3%));
   }
 
   .certificate-surface {

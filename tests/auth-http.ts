@@ -19,7 +19,10 @@ async function main() {
   const page = await request("/login");
   assert.equal(page.status, 200);
   const loginHtml = await page.text();
-  assert.ok(!loginHtml.includes("/_next/") && !loginHtml.includes("<script"));
+  assert.ok(!loginHtml.includes("/_next/"));
+  const nonce = loginHtml.match(/<script nonce="([A-Za-z0-9+/=_-]+)">/)?.[1];
+  assert.ok(nonce && page.headers.get("content-security-policy")?.includes(`'nonce-${nonce}'`));
+  assert.ok(loginHtml.includes('id="toggle-password"'));
   assert.ok(!loginHtml.includes(password));
   for (const path of ["/", "/bulk", "/settings", "/history", "/verify", "/templates/halal-training/frame.png", "/favicon.ico", "/_next/static/unknown.js", "/api/auth/session"]) {
     assert.equal((await request(path)).status, 401, `unauthenticated ${path}`);

@@ -45,12 +45,15 @@ test("return destinations cannot leave the site or enter internal endpoints", ()
   assert.equal(safeReturnPath("/history?search=sample"), "/history?search=sample");
 });
 
-test("login HTML escapes input and exposes no application scripts", () => {
-  const html = loginPage('/?x="/><script>alert(1)</script>', "invalid", true);
+test("login HTML escapes input and limits the password toggle to a nonce", () => {
+  const html = loginPage('/?x="/><script>alert(1)</script>', "invalid", true, "test-nonce");
   assert.equal(html.includes("<script>"), false);
+  assert.equal(html.includes('<script nonce="test-nonce">'), true);
   assert.equal(html.includes("/_next/"), false);
   assert.equal(html.includes('type="password"'), true);
-  assert.equal(loginPage("/", "", false).includes(" disabled"), true);
+  assert.equal(html.includes('id="toggle-password"'), true);
+  assert.equal(html.includes('&lt;script&gt;alert(1)&lt;/script&gt;'), true);
+  assert.equal(loginPage("/", "", false, "test-nonce").includes(" disabled"), true);
 });
 
 test("failed-attempt limiter rejects bursts and expires", () => {

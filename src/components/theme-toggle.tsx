@@ -14,7 +14,7 @@ import {
 const OPTIONS = [
   { value: "light", label: "روشن", icon: Sun },
   { value: "dark", label: "تیره", icon: Moon },
-  { value: "f1", label: "فرمول یک", icon: Gauge },
+  { value: "f1", label: "فرمول یک · LH44", icon: Gauge },
   { value: "system", label: "سیستم", icon: Monitor },
 ] as const;
 
