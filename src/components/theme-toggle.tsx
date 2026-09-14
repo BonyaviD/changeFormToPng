@@ -35,7 +35,18 @@ export function ThemeToggle() {
           <Gauge className="hidden size-4 f1:block" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="min-w-36">
+      {/*
+        The toggle sits near the left edge of the RTL header, and Radix has no
+        DirectionProvider here, so it aligns the menu with LTR rules and grows it
+        toward that edge. Collision padding keeps the menu clear of the viewport
+        on every side instead of letting it clamp flush against the corner.
+      */}
+      <DropdownMenuContent
+        align="end"
+        sideOffset={8}
+        collisionPadding={12}
+        className="min-w-44"
+      >
         {OPTIONS.map((option) => (
           <DropdownMenuItem
             key={option.value}
