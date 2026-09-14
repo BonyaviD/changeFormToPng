@@ -124,20 +124,21 @@ export const SIGNATURE = {
 /**
  * The signature mark.
  *
- * Signature scans are mostly transparent sheet, so sizing the `<img>` by its
- * own dimensions positions the file rather than the strokes. Every signature is
- * stored cropped to its ink, and the mark is placed by its centre at a fixed
- * height, letting the image's own aspect ratio decide the width.
+ * The artwork draws the stored signature exactly as the settings page shows it,
+ * with no rotation of its own. It used to turn every signature 60° and size it
+ * by height before turning — right for the original upright scan and wrong for
+ * anything else: a signature already saved the right way up was turned a second
+ * time and printed standing on end, large, across the body text. Orientation is
+ * now the operator's choice, made in settings and baked into the stored image.
  *
- * It is centred low enough to run across the printed name and role rather than
- * float in clear space above them. That is deliberate: a signature sitting on
- * blank paper can be cut out of an issued certificate and reused, whereas one
- * crossing the text takes the text with it.
+ * The image is fitted inside a fixed box centred on the name line, so a long
+ * flat signature and a tall compact one both land at a sensible size. It
+ * deliberately overlaps the printed name and role: a signature on blank paper
+ * can be cut out and reused, one crossing the text takes the text with it.
  */
 export const SIGNATURE_INK = {
-  /** Height of the ink, before rotation. */
-  height: 142,
-  rotation: 60,
-  /** Centre of the mark. Sits on the name line, not above it. */
+  maxWidth: 220,
+  maxHeight: 118,
+  /** Centre of the box. Sits on the name line, not above it. */
   centreY: 652,
 } as const;

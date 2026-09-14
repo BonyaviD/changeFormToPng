@@ -1,6 +1,14 @@
 "use client";
 
-import { GraduationCap, Plus, RotateCcw, Signature, Tag, Trash2 } from "lucide-react";
+import {
+  GraduationCap,
+  Plus,
+  RotateCcw,
+  RotateCw,
+  Signature,
+  Tag,
+  Trash2,
+} from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -15,7 +23,11 @@ import { toPersianDigits } from "@/lib/persian";
 import { DEFAULT_SETTINGS } from "@/lib/settings/defaults";
 import { resetSettings } from "@/lib/settings/store";
 import type { CourseEntry, SignatoryEntry } from "@/lib/settings/types";
-import { readSignatureImage } from "@/lib/settings/signature-image";
+import {
+  normalizeAngle,
+  readSignatureImage,
+  rotateSignature,
+} from "@/lib/settings/signature-image";
 
 function newId(prefix: string) {
   return `${prefix}-${Math.random().toString(36).slice(2, 8)}`;
@@ -210,6 +222,8 @@ function SignatoriesPanel({
           نام و سمت اینجا ذخیره می‌شود و در فرم صدور از همین فهرست انتخاب می‌شود.
           هیچ امضایی همراه برنامه منتشر نمی‌شود تا از آدرس عمومی قابل دانلود نباشد؛
           تصویر امضا را یک‌بار اینجا بارگذاری کنید و فقط در همین مرورگر می‌ماند.
+          زاویه‌ی امضا را با دکمه‌های چرخش تنظیم کنید؛ روی گواهی دقیقاً همان‌طور که
+          اینجا دیده می‌شود چاپ می‌شود.
         </p>
         <div>
           <Button
@@ -258,11 +272,28 @@ function SignatoryRow({
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
+  const [rotating, setRotating] = useState(false);
+
+  // Signatures saved before rotation existed have no separate source; their
+  // stored image is the source.
+  const source = signatory.signatureSource ?? signatory.signatureImage;
+  const angle = signatory.signatureRotation ?? 0;
+
+  /*
+   * Rapid clicks must accumulate: the second click has to build on the first
+   * one's angle even before its render arrives, and only the last request may
+   * write its result.
+   */
+  const pendingAngle = useRef<number | null>(null);
+  const latestRequest = useRef(0);
 
   async function handleFile(file: File) {
     setBusy(true);
     try {
-      onPatch({ signatureImage: await readSignatureImage(file) });
+      const uploaded = await readSignatureImage(file);
+      pendingAngle.current = null;
+      latestRequest.current += 1;
+      onPatch({ signatureSource: uploaded, signatureImage: uploaded, signatureRotation: 0 });
       toast.success("تصویر امضا ذخیره شد.");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "خواندن تصویر ناموفق بود.");
@@ -271,8 +302,35 @@ function SignatoryRow({
     }
   }
 
+  async function rotateTo(target: number) {
+    if (!source) return;
+    const next = normalizeAngle(target);
+    pendingAngle.current = next;
+    const request = ++latestRequest.current;
+    setRotating(true);
+
+    try {
+      const baked = await rotateSignature(source, next);
+      if (request !== latestRequest.current) return;
+      onPatch({ signatureSource: source, signatureImage: baked, signatureRotation: next });
+    } catch (error) {
+      if (request === latestRequest.current) {
+        toast.error(error instanceof Error ? error.message : "چرخش تصویر ناموفق بود.");
+      }
+    } finally {
+      if (request === latestRequest.current) {
+        pendingAngle.current = null;
+        setRotating(false);
+      }
+    }
+  }
+
+  const rotateBy = (delta: number) => rotateTo((pendingAngle.current ?? angle) + delta);
+
+  const angleLabel = `${angle > 0 ? "+" : angle < 0 ? "−" : ""}${toPersianDigits(Math.abs(angle))}°`;
+
   return (
-    <div className="grid gap-3 rounded-lg border p-4 sm:grid-cols-[minmax(0,1fr)_9rem]">
+    <div className="grid gap-3 rounded-lg border p-4 sm:grid-cols-[minmax(0,1fr)_12rem]">
       <div className="space-y-3">
         <div className="space-y-1.5">
           <Label className="text-xs">نام</Label>
@@ -295,7 +353,8 @@ function SignatoryRow({
       </div>
 
       <div className="space-y-2">
-        <div className="bg-muted/40 grid h-24 place-items-center overflow-hidden rounded-md border">
+        {/* White, like the certificate paper, so the preview reads true. */}
+        <div className="grid h-28 place-items-center overflow-hidden rounded-md border bg-white p-2">
           {signatory.signatureImage ? (
             /* eslint-disable-next-line @next/next/no-img-element */
             <img
@@ -304,9 +363,70 @@ function SignatoryRow({
               className="max-h-full max-w-full object-contain"
             />
           ) : (
-            <span className="text-muted-foreground text-xs">بدون امضا</span>
+            <span className="text-xs text-neutral-500">بدون امضا</span>
           )}
         </div>
+
+        {source ? (
+          <div className="space-y-1">
+            <div className="flex items-center justify-between gap-1" dir="ltr">
+              <Button
+                variant="outline"
+                size="icon"
+                className="size-8"
+                disabled={rotating}
+                aria-label="چرخش ۹۰ درجه پادساعتگرد"
+                title="چرخش ۹۰ درجه پادساعتگرد"
+                onClick={() => void rotateBy(-90)}
+              >
+                <RotateCcw className="size-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 px-2 text-xs"
+                disabled={rotating}
+                aria-label="چرخش ۵ درجه پادساعتگرد"
+                onClick={() => void rotateBy(-5)}
+              >
+                −۵°
+              </Button>
+              <span className="min-w-10 text-center text-xs tabular-nums">{angleLabel}</span>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 px-2 text-xs"
+                disabled={rotating}
+                aria-label="چرخش ۵ درجه ساعتگرد"
+                onClick={() => void rotateBy(5)}
+              >
+                +۵°
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                className="size-8"
+                disabled={rotating}
+                aria-label="چرخش ۹۰ درجه ساعتگرد"
+                title="چرخش ۹۰ درجه ساعتگرد"
+                onClick={() => void rotateBy(90)}
+              >
+                <RotateCw className="size-4" />
+              </Button>
+            </div>
+            {angle !== 0 ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 w-full text-xs"
+                disabled={rotating}
+                onClick={() => void rotateTo(0)}
+              >
+                بدون چرخش
+              </Button>
+            ) : null}
+          </div>
+        ) : null}
 
         <input
           ref={inputRef}

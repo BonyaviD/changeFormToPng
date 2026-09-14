@@ -131,20 +131,18 @@ function SignatureBlock({
         <div
           style={{
             position: "absolute",
-            left: centreX,
-            top: SIGNATURE_INK.centreY,
-            height: SIGNATURE_INK.height,
-            // Auto width lets the cropped scan keep its own proportions; the
-            // translate centres it on the point regardless of what that is.
-            transform: `translate(-50%, -50%) rotate(${SIGNATURE_INK.rotation}deg)`,
-            transformOrigin: "center",
+            left: centreX - SIGNATURE_INK.maxWidth / 2,
+            top: SIGNATURE_INK.centreY - SIGNATURE_INK.maxHeight / 2,
+            width: SIGNATURE_INK.maxWidth,
+            height: SIGNATURE_INK.maxHeight,
           }}
         >
+          {/* `contain` fits any orientation inside the box and centres it. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={signatureImage}
             alt=""
-            style={{ height: "100%", width: "auto", display: "block" }}
+            style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }}
           />
         </div>
       ) : null}

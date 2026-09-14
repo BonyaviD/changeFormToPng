@@ -10,11 +10,18 @@ export interface SignatoryEntry {
   name: string;
   title: string;
   /**
-   * Either a path under `public/` (the signature shipped with the app) or a
-   * data URL uploaded through the settings page. Both work as an `<img src>`,
-   * which is why the field is a plain string.
+   * What the certificate draws, exactly as stored: the signature turned to
+   * `signatureRotation` and cropped to its ink. A data URL.
    */
   signatureImage?: string;
+  /**
+   * The upload, cropped and downscaled but never rotated — the master every
+   * rotation is recomputed from. Absent on signatures saved before rotation
+   * existed; those treat `signatureImage` as their source.
+   */
+  signatureSource?: string;
+  /** Clockwise turn in degrees, in (-180, 180]. Absent means 0. */
+  signatureRotation?: number;
 }
 
 /**
