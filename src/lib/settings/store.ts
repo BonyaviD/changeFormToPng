@@ -1,5 +1,6 @@
 import { DEFAULT_SETTINGS } from "./defaults";
 import type { AppSettings } from "./types";
+import { normalizeWatermarkSettings } from "./watermark";
 
 const STORAGE_KEY = "sara.settings.v1";
 export const SETTINGS_EVENT = "sara:settings-changed";
@@ -26,6 +27,7 @@ export function readSettings(): AppSettings {
       courses: stored.courses ?? DEFAULT_SETTINGS.courses,
       signatories: stored.signatories ?? DEFAULT_SETTINGS.signatories,
       unitCaptions: stored.unitCaptions ?? DEFAULT_SETTINGS.unitCaptions,
+      watermark: normalizeWatermarkSettings(stored.watermark),
     };
   } catch (error) {
     console.warn("خواندن تنظیمات ناموفق بود؛ از مقادیر پیش‌فرض استفاده می‌شود.", error);

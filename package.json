@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "test": "node scripts/typescript-runner.cjs tests/auth.test.ts",
+    "test": "node scripts/typescript-runner.cjs tests/auth.test.ts && node scripts/typescript-runner.cjs tests/watermark.test.ts",
     "auth:setup": "node scripts/typescript-runner.cjs scripts/configure-auth.ts"
   },
   "dependencies": {

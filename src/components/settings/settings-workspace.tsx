@@ -2,10 +2,12 @@
 
 import {
   GraduationCap,
+  Move,
   Plus,
   RotateCcw,
   RotateCw,
   Signature,
+  Stamp,
   Tag,
   Trash2,
   ZoomIn,
@@ -19,12 +21,31 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useSettings } from "@/hooks/use-settings";
 import { toPersianDigits } from "@/lib/persian";
 import { DEFAULT_SETTINGS } from "@/lib/settings/defaults";
 import { resetSettings } from "@/lib/settings/store";
-import type { CourseEntry, SignatoryEntry } from "@/lib/settings/types";
+import type {
+  CourseEntry,
+  SignatoryEntry,
+  WatermarkSettings,
+} from "@/lib/settings/types";
+import {
+  DEFAULT_WATERMARK,
+  normalizeWatermarkColor,
+  normalizeWatermarkSettings,
+  WATERMARK_OPACITY_MAX,
+  WATERMARK_OPACITY_MIN,
+  WATERMARK_OPACITY_STEP,
+  WATERMARK_POSITION_MAX,
+  WATERMARK_POSITION_MIN,
+  WATERMARK_SIZE_MAX,
+  WATERMARK_SIZE_MIN,
+  WATERMARK_SIZE_STEP,
+} from "@/lib/settings/watermark";
+import { ASSETS } from "@/lib/templates/halal-training/layout";
 import {
   normalizeSignatureScale,
   SIGNATURE_SCALE_DEFAULT,
@@ -56,7 +77,7 @@ export function SettingsWorkspace() {
   return (
     <Tabs defaultValue="courses" className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <TabsList>
+        <TabsList className="h-auto flex-wrap">
           <TabsTrigger value="courses" className="gap-1.5">
             <GraduationCap className="size-4" />
             دوره‌ها
@@ -68,6 +89,10 @@ export function SettingsWorkspace() {
           <TabsTrigger value="captions" className="gap-1.5">
             <Tag className="size-4" />
             عناوین سربرگ
+          </TabsTrigger>
+          <TabsTrigger value="watermark" className="gap-1.5">
+            <Stamp className="size-4" />
+            واترمارک
           </TabsTrigger>
         </TabsList>
 
@@ -104,6 +129,15 @@ export function SettingsWorkspace() {
           captions={settings.unitCaptions}
           onChange={(unitCaptions) =>
             guard(() => update((current) => ({ ...current, unitCaptions })))
+          }
+        />
+      </TabsContent>
+
+      <TabsContent value="watermark">
+        <WatermarkPanel
+          watermark={settings.watermark}
+          onChange={(watermark) =>
+            guard(() => update((current) => ({ ...current, watermark })))
           }
         />
       </TabsContent>
@@ -540,6 +574,329 @@ function SignatoryRow({
         </div>
       </div>
     </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+
+const WATERMARK_POSITIONS = [
+  { x: 0, y: 0, label: "بالا چپ" },
+  { x: 50, y: 0, label: "بالا وسط" },
+  { x: 100, y: 0, label: "بالا راست" },
+  { x: 0, y: 50, label: "وسط چپ" },
+  { x: 50, y: 50, label: "وسط" },
+  { x: 100, y: 50, label: "وسط راست" },
+  { x: 0, y: 100, label: "پایین چپ" },
+  { x: 50, y: 100, label: "پایین وسط" },
+  { x: 100, y: 100, label: "پایین راست" },
+] as const;
+
+const WATERMARK_COLORS = [
+  { value: "#268a69", label: "سبز حلال" },
+  { value: "#299dcc", label: "آبی نشان" },
+  { value: "#6b7280", label: "خاکستری" },
+  { value: "#8a855e", label: "طلایی زیتونی" },
+  { value: "#1f3fc3", label: "آبی رسمی" },
+] as const;
+
+function WatermarkPanel({
+  watermark,
+  onChange,
+}: {
+  watermark: WatermarkSettings;
+  onChange: (next: WatermarkSettings) => void;
+}) {
+  const resolved = normalizeWatermarkSettings(watermark);
+
+  function patch(changes: Partial<WatermarkSettings>) {
+    onChange(normalizeWatermarkSettings({ ...resolved, ...changes }));
+  }
+
+  const previewWidth =
+    28 +
+    ((resolved.size - WATERMARK_SIZE_MIN) /
+      (WATERMARK_SIZE_MAX - WATERMARK_SIZE_MIN)) *
+      34;
+
+  return (
+    <Card>
+      <CardHeader className="gap-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="space-y-1">
+            <CardTitle className="text-base">واترمارک نشان حلال</CardTitle>
+            <p className="text-muted-foreground text-xs">
+              نشان سیب حلال پشت متن گواهی قرار می‌گیرد و در خروجی تصویر، پی‌دی‌اف
+              و صدور گروهی نیز با همین تنظیمات چاپ می‌شود.
+            </p>
+          </div>
+          <div className="flex items-center gap-3 rounded-lg border px-3 py-2">
+            <Label htmlFor="watermark-enabled" className="cursor-pointer text-sm">
+              نمایش واترمارک
+            </Label>
+            <Switch
+              id="watermark-enabled"
+              checked={resolved.enabled}
+              onCheckedChange={(enabled) => patch({ enabled })}
+            />
+          </div>
+        </div>
+      </CardHeader>
+
+      <CardContent className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
+        <fieldset
+          disabled={!resolved.enabled}
+          className="space-y-6 disabled:pointer-events-none disabled:opacity-45"
+        >
+          <div className="grid gap-5 md:grid-cols-2">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between gap-2">
+                <Label htmlFor="watermark-x" className="text-xs">
+                  جای افقی
+                </Label>
+                <span className="text-muted-foreground text-xs tabular-nums">
+                  {toPersianDigits(resolved.x)}٪
+                </span>
+              </div>
+              <input
+                id="watermark-x"
+                type="range"
+                min={WATERMARK_POSITION_MIN}
+                max={WATERMARK_POSITION_MAX}
+                step={1}
+                value={resolved.x}
+                className="accent-primary h-1.5 w-full cursor-pointer"
+                style={{ direction: "ltr" }}
+                onChange={(event) => patch({ x: event.target.valueAsNumber })}
+              />
+              <div
+                className="text-muted-foreground grid grid-cols-3 text-[11px]"
+                dir="ltr"
+              >
+                <span dir="rtl" className="text-left">
+                  چپ · ۰٪
+                </span>
+                <span dir="rtl" className="text-center">
+                  وسط · ۵۰٪
+                </span>
+                <span dir="rtl" className="text-right">
+                  راست · ۱۰۰٪
+                </span>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex items-center justify-between gap-2">
+                <Label htmlFor="watermark-y" className="text-xs">
+                  جای عمودی
+                </Label>
+                <span className="text-muted-foreground text-xs tabular-nums">
+                  {toPersianDigits(resolved.y)}٪
+                </span>
+              </div>
+              <input
+                id="watermark-y"
+                type="range"
+                min={WATERMARK_POSITION_MIN}
+                max={WATERMARK_POSITION_MAX}
+                step={1}
+                value={resolved.y}
+                className="accent-primary h-1.5 w-full cursor-pointer"
+                style={{ direction: "ltr" }}
+                onChange={(event) => patch({ y: event.target.valueAsNumber })}
+              />
+              <div
+                className="text-muted-foreground grid grid-cols-3 text-[11px]"
+                dir="ltr"
+              >
+                <span dir="rtl" className="text-left">
+                  بالا · ۰٪
+                </span>
+                <span dir="rtl" className="text-center">
+                  وسط · ۵۰٪
+                </span>
+                <span dir="rtl" className="text-right">
+                  پایین · ۱۰۰٪
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Move className="text-muted-foreground size-4" />
+              <Label className="text-xs">موقعیت‌های آماده</Label>
+            </div>
+            <div className="grid w-fit grid-cols-3 gap-1" dir="ltr">
+              {WATERMARK_POSITIONS.map((position) => {
+                const active =
+                  resolved.x === position.x && resolved.y === position.y;
+                return (
+                  <Button
+                    key={position.label}
+                    type="button"
+                    variant={active ? "default" : "outline"}
+                    size="icon"
+                    className="size-9"
+                    aria-label={position.label}
+                    title={position.label}
+                    onClick={() => patch({ x: position.x, y: position.y })}
+                  >
+                    <span className="size-2 rounded-full bg-current" />
+                  </Button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="grid gap-5 md:grid-cols-2">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between gap-2">
+                <Label htmlFor="watermark-size" className="text-xs">
+                  اندازه نشان
+                </Label>
+                <span className="text-muted-foreground text-xs tabular-nums">
+                  {toPersianDigits(resolved.size)} پیکسل
+                </span>
+              </div>
+              <input
+                id="watermark-size"
+                type="range"
+                min={WATERMARK_SIZE_MIN}
+                max={WATERMARK_SIZE_MAX}
+                step={WATERMARK_SIZE_STEP}
+                value={resolved.size}
+                className="accent-primary h-1.5 w-full cursor-pointer"
+                style={{ direction: "ltr" }}
+                onChange={(event) => patch({ size: event.target.valueAsNumber })}
+              />
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex items-center justify-between gap-2">
+                <Label htmlFor="watermark-opacity" className="text-xs">
+                  شفافیت
+                </Label>
+                <span className="text-muted-foreground text-xs tabular-nums">
+                  {toPersianDigits(Math.round(resolved.opacity * 100))}٪
+                </span>
+              </div>
+              <input
+                id="watermark-opacity"
+                type="range"
+                min={WATERMARK_OPACITY_MIN}
+                max={WATERMARK_OPACITY_MAX}
+                step={WATERMARK_OPACITY_STEP}
+                value={resolved.opacity}
+                className="accent-primary h-1.5 w-full cursor-pointer"
+                style={{ direction: "ltr" }}
+                onChange={(event) => patch({ opacity: event.target.valueAsNumber })}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <div className="flex items-center justify-between gap-2">
+              <Label htmlFor="watermark-color" className="text-xs">
+                رنگ واترمارک
+              </Label>
+              <code className="text-muted-foreground text-xs" dir="ltr">
+                {resolved.color}
+              </code>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <input
+                id="watermark-color"
+                type="color"
+                value={resolved.color}
+                aria-label="انتخاب رنگ واترمارک"
+                className="h-9 w-12 cursor-pointer rounded-md border bg-transparent p-1"
+                onChange={(event) =>
+                  patch({ color: normalizeWatermarkColor(event.target.value) })
+                }
+              />
+              {WATERMARK_COLORS.map((color) => (
+                <button
+                  key={color.value}
+                  type="button"
+                  aria-label={color.label}
+                  title={color.label}
+                  className="size-8 cursor-pointer rounded-full border-2 border-white shadow-sm ring-1 ring-border transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  style={{ backgroundColor: color.value }}
+                  onClick={() => patch({ color: color.value })}
+                />
+              ))}
+            </div>
+          </div>
+
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => onChange(DEFAULT_WATERMARK)}
+          >
+            <RotateCcw className="size-4" />
+            تنظیمات پیش‌فرض واترمارک
+          </Button>
+        </fieldset>
+
+        <div className="space-y-2">
+          <Label className="text-xs">پیش‌نمایش جای واترمارک</Label>
+          <div
+            className="relative aspect-[1014/689] overflow-hidden rounded-xl border bg-white shadow-inner"
+            dir="ltr"
+          >
+            {resolved.enabled ? (
+              <div
+                aria-hidden="true"
+                style={{
+                  position: "absolute",
+                  left: `${resolved.x}%`,
+                  top: `${resolved.y}%`,
+                  width: `${previewWidth}%`,
+                  aspectRatio: "800 / 978",
+                  backgroundColor: resolved.color,
+                  opacity: resolved.opacity,
+                  transform: `translate(${-resolved.x}%, ${-resolved.y}%)`,
+                  WebkitMaskImage: `url(${ASSETS.logoHalal})`,
+                  WebkitMaskPosition: "center",
+                  WebkitMaskRepeat: "no-repeat",
+                  WebkitMaskSize: "contain",
+                  maskImage: `url(${ASSETS.logoHalal})`,
+                  maskPosition: "center",
+                  maskRepeat: "no-repeat",
+                  maskSize: "contain",
+                }}
+              />
+            ) : null}
+
+            <div className="pointer-events-none absolute inset-0 z-10 p-[7%] text-neutral-700">
+              <div className="flex items-start justify-between">
+                <div className="size-7 rounded-full border-2 border-neutral-400" />
+                <div className="h-8 w-10 rounded border border-neutral-300" />
+                <div className="size-7 rounded-full border-2 border-neutral-400" />
+              </div>
+              <div className="mx-auto mt-[8%] h-2 w-1/3 rounded-full bg-neutral-500/65" />
+              <div className="mx-auto mt-[4%] h-1.5 w-1/2 rounded-full bg-neutral-400/60" />
+              <div className="mt-[12%] space-y-2">
+                <div className="h-1.5 w-full rounded-full bg-neutral-400/55" />
+                <div className="h-1.5 w-5/6 rounded-full bg-neutral-400/55" />
+                <div className="h-1.5 w-11/12 rounded-full bg-neutral-400/55" />
+              </div>
+            </div>
+
+            {!resolved.enabled ? (
+              <div className="absolute inset-0 z-20 grid place-items-center bg-white/75 text-sm font-medium text-neutral-500">
+                واترمارک خاموش است
+              </div>
+            ) : null}
+          </div>
+          <p className="text-muted-foreground text-[11px]">
+            موقعیت درصدی، نشان را همیشه داخل کاغذ نگه می‌دارد؛ ۰٪ و ۱۰۰٪ دقیقاً
+            لبه‌های کاغذ هستند.
+          </p>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 

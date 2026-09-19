@@ -26,6 +26,21 @@ export interface SignatoryEntry {
   signatureScale?: number;
 }
 
+export interface WatermarkSettings {
+  /** Whether the halal mark is drawn behind the certificate content. */
+  enabled: boolean;
+  /** Physical horizontal position inside the paper: 0 is left, 100 is right. */
+  x: number;
+  /** Physical vertical position inside the paper: 0 is top, 100 is bottom. */
+  y: number;
+  /** Rendered logo width in certificate design pixels. */
+  size: number;
+  /** Solid tint applied to the logo's alpha mask. */
+  color: string;
+  /** Opacity from 0 (invisible) to 1 (solid). */
+  opacity: number;
+}
+
 /**
  * Everything on the certificate that is a matter of organisational fact rather
  * than of the individual being certified. It is editable from `/settings` and
@@ -36,4 +51,5 @@ export interface AppSettings {
   signatories: SignatoryEntry[];
   /** Second line under the right-hand logo, e.g. the issuing directorate. */
   unitCaptions: string[];
+  watermark: WatermarkSettings;
 }

@@ -6,7 +6,7 @@ export default function SettingsPage() {
     <div className="space-y-6">
       <PageHeader
         title="تنظیمات"
-        description="فهرست دوره‌ها، امضاکنندگان و عناوین سربرگ. هر تغییری بلافاصله در فرم صدور اثر می‌کند."
+        description="دوره‌ها، امضاکنندگان، عناوین سربرگ و واترمارک را مدیریت کنید. هر تغییری بلافاصله در فرم صدور اثر می‌کند."
       />
       <SettingsWorkspace />
     </div>

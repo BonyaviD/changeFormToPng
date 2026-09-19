@@ -2,6 +2,7 @@ import type { ArtworkContext } from "@/lib/templates/types";
 
 import type { AppSettings } from "./types";
 import { normalizeSignatureScale } from "./signature-scale";
+import { normalizeWatermarkSettings } from "./watermark";
 
 /**
  * Builds the render context every screen hands to an artwork.
@@ -22,5 +23,10 @@ export function buildArtworkContext(
       signatureScales[name] = normalizeSignatureScale(signatory.signatureScale);
     }
   }
-  return { serial, signatureImages, signatureScales };
+  return {
+    serial,
+    signatureImages,
+    signatureScales,
+    watermark: normalizeWatermarkSettings(settings.watermark),
+  };
 }

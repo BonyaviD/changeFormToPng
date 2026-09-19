@@ -1,5 +1,6 @@
 import { DEFAULT_COURSES } from "./courses";
 import type { AppSettings, SignatoryEntry } from "./types";
+import { DEFAULT_WATERMARK } from "./watermark";
 
 /**
  * No signature ships with the app, and this is deliberate.
@@ -27,4 +28,5 @@ export const DEFAULT_SETTINGS: AppSettings = {
   courses: DEFAULT_COURSES,
   signatories: DEFAULT_SIGNATORIES,
   unitCaptions: DEFAULT_UNIT_CAPTIONS,
+  watermark: DEFAULT_WATERMARK,
 };

@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from "react";
+import { useId, type CSSProperties, type ReactNode } from "react";
 
 import { formatJalali } from "@/lib/jalali";
 import { toPersianDigits } from "@/lib/persian";
@@ -186,6 +186,60 @@ function SignatureBlock({
 }
 
 /* -------------------------------------------------------------------------- */
+/* Watermark                                                                   */
+/* -------------------------------------------------------------------------- */
+
+function HalalWatermark({ settings }: { settings?: ArtworkContext["watermark"] }) {
+  const uniqueId = useId().replace(/[^a-zA-Z0-9_-]/g, "");
+  const filterId = `halal-watermark-${uniqueId}`;
+
+  if (!settings?.enabled || settings.opacity <= 0) return null;
+
+  const width = settings.size;
+  // The source artwork is 800 × 978. Keeping the native ratio prevents the
+  // apple and Arabic mark from becoming wider or shorter as it moves.
+  const height = width * (978 / 800);
+  const left = PAPER.x + PAPER.width * (settings.x / 100);
+  const top = PAPER.y + PAPER.height * (settings.y / 100);
+
+  return (
+    <svg
+      aria-hidden="true"
+      width={width}
+      height={height}
+      viewBox="0 0 800 978"
+      style={{
+        position: "absolute",
+        left,
+        top,
+        display: "block",
+        opacity: settings.opacity,
+        pointerEvents: "none",
+        transform: `translate(${-settings.x}%, ${-settings.y}%)`,
+      }}
+    >
+      <defs>
+        <filter id={filterId} colorInterpolationFilters="sRGB">
+          <feFlood floodColor={settings.color} result="watermark-color" />
+          <feComposite
+            in="watermark-color"
+            in2="SourceGraphic"
+            operator="in"
+          />
+        </filter>
+      </defs>
+      <image
+        href={ASSETS.logoHalal}
+        width="800"
+        height="978"
+        preserveAspectRatio="xMidYMid meet"
+        filter={`url(#${filterId})`}
+      />
+    </svg>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
 /* Artwork                                                                     */
 /* -------------------------------------------------------------------------- */
 
@@ -247,6 +301,9 @@ export function HalalTrainingArtwork({
           backgroundColor: "#ffffff",
         }}
       />
+
+      {/* A tinted copy of the halal logo, above the paper and below all ink. */}
+      <HalalWatermark settings={context.watermark} />
 
       {/* --- Header ------------------------------------------------------- */}
       {/*

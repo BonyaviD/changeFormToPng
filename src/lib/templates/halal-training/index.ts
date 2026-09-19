@@ -210,7 +210,7 @@ export const halalTrainingTemplate: CertificateTemplate<HalalTrainingValues> = {
   id: "halal-training",
   name: "گواهی پایان دوره آموزشی",
   description: "قالب رسمی مرکز تحقیقات حلال با کادر تذهیب و امضای رئیس مرکز.",
-  version: 2,
+  version: 3,
   size: CANVAS,
   schema: halalTrainingSchema,
   groups,

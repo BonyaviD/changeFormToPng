@@ -1,6 +1,8 @@
 import type { ComponentType } from "react";
 import type { ZodType, ZodTypeDef } from "zod";
 
+import type { WatermarkSettings } from "@/lib/settings/types";
+
 /**
  * The certificate template contract.
  *
@@ -96,6 +98,8 @@ export interface ArtworkContext {
   signatureImages?: Readonly<Record<string, string>>;
   /** Per-signatory visual zoom, keyed by the same printed name. */
   signatureScales?: Readonly<Record<string, number>>;
+  /** Optional organisation watermark shared by previews and every export path. */
+  watermark?: Readonly<WatermarkSettings>;
 }
 
 export interface RecordSummary {
