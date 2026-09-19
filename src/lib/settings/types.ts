@@ -22,6 +22,8 @@ export interface SignatoryEntry {
   signatureSource?: string;
   /** Clockwise turn in degrees, in (-180, 180]. Absent means 0. */
   signatureRotation?: number;
+  /** Visual zoom on the certificate. Absent means 1 (100%). */
+  signatureScale?: number;
 }
 
 /**

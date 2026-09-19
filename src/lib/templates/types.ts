@@ -94,6 +94,8 @@ export interface ArtworkContext {
    * re-issue picks up whatever signature is on file for that person today.
    */
   signatureImages?: Readonly<Record<string, string>>;
+  /** Per-signatory visual zoom, keyed by the same printed name. */
+  signatureScales?: Readonly<Record<string, number>>;
 }
 
 export interface RecordSummary {

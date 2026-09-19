@@ -119,11 +119,13 @@ function SignatureBlock({
   name,
   title,
   signatureImage,
+  signatureScale = 1,
 }: {
   centreX: number;
   name: string;
   title: string;
   signatureImage?: string;
+  signatureScale?: number;
 }) {
   return (
     <>
@@ -142,7 +144,14 @@ function SignatureBlock({
           <img
             src={signatureImage}
             alt=""
-            style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }}
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "contain",
+              display: "block",
+              transform: `scale(${signatureScale})`,
+              transformOrigin: "center",
+            }}
           />
         </div>
       ) : null}
@@ -194,6 +203,8 @@ export function HalalTrainingArtwork({
 
   const signatureFor = (name: string) =>
     context.signatureImages?.[name?.trim() ?? ""] ?? undefined;
+  const signatureScaleFor = (name: string) =>
+    context.signatureScales?.[name?.trim() ?? ""] ?? 1;
 
   return (
     <div
@@ -355,12 +366,14 @@ export function HalalTrainingArtwork({
             name={values.primarySignatoryName}
             title={values.primarySignatoryTitle}
             signatureImage={signatureFor(values.primarySignatoryName)}
+            signatureScale={signatureScaleFor(values.primarySignatoryName)}
           />
           <SignatureBlock
             centreX={SIGNATURE.dualCentreX.secondary}
             name={values.secondSignatoryName || ""}
             title={values.secondSignatoryTitle || ""}
             signatureImage={signatureFor(values.secondSignatoryName || "")}
+            signatureScale={signatureScaleFor(values.secondSignatoryName || "")}
           />
         </>
       ) : (
@@ -369,6 +382,7 @@ export function HalalTrainingArtwork({
           name={values.primarySignatoryName}
           title={values.primarySignatoryTitle}
           signatureImage={signatureFor(values.primarySignatoryName)}
+          signatureScale={signatureScaleFor(values.primarySignatoryName)}
         />
       )}
     </div>

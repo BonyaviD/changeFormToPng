@@ -8,6 +8,8 @@ import {
   Signature,
   Tag,
   Trash2,
+  ZoomIn,
+  ZoomOut,
 } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
@@ -23,6 +25,13 @@ import { toPersianDigits } from "@/lib/persian";
 import { DEFAULT_SETTINGS } from "@/lib/settings/defaults";
 import { resetSettings } from "@/lib/settings/store";
 import type { CourseEntry, SignatoryEntry } from "@/lib/settings/types";
+import {
+  normalizeSignatureScale,
+  SIGNATURE_SCALE_DEFAULT,
+  SIGNATURE_SCALE_MAX,
+  SIGNATURE_SCALE_MIN,
+  SIGNATURE_SCALE_STEP,
+} from "@/lib/settings/signature-scale";
 import {
   normalizeAngle,
   readSignatureImage,
@@ -222,8 +231,8 @@ function SignatoriesPanel({
           نام و سمت اینجا ذخیره می‌شود و در فرم صدور از همین فهرست انتخاب می‌شود.
           هیچ امضایی همراه برنامه منتشر نمی‌شود تا از آدرس عمومی قابل دانلود نباشد؛
           تصویر امضا را یک‌بار اینجا بارگذاری کنید و فقط در همین مرورگر می‌ماند.
-          زاویه‌ی امضا را با دکمه‌های چرخش تنظیم کنید؛ روی گواهی دقیقاً همان‌طور که
-          اینجا دیده می‌شود چاپ می‌شود.
+          زاویه و اندازه‌ی امضا را با کنترل‌های هر ردیف تنظیم کنید؛ روی گواهی دقیقاً
+          همان‌طور که اینجا دیده می‌شود چاپ می‌شود.
         </p>
         <div>
           <Button
@@ -278,6 +287,7 @@ function SignatoryRow({
   // stored image is the source.
   const source = signatory.signatureSource ?? signatory.signatureImage;
   const angle = signatory.signatureRotation ?? 0;
+  const scale = normalizeSignatureScale(signatory.signatureScale);
 
   /*
    * Rapid clicks must accumulate: the second click has to build on the first
@@ -293,7 +303,12 @@ function SignatoryRow({
       const uploaded = await readSignatureImage(file);
       pendingAngle.current = null;
       latestRequest.current += 1;
-      onPatch({ signatureSource: uploaded, signatureImage: uploaded, signatureRotation: 0 });
+      onPatch({
+        signatureSource: uploaded,
+        signatureImage: uploaded,
+        signatureRotation: 0,
+        signatureScale: SIGNATURE_SCALE_DEFAULT,
+      });
       toast.success("تصویر امضا ذخیره شد.");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "خواندن تصویر ناموفق بود.");
@@ -360,7 +375,8 @@ function SignatoryRow({
             <img
               src={signatory.signatureImage}
               alt=""
-              className="max-h-full max-w-full object-contain"
+              className="max-h-full max-w-full object-contain transition-transform"
+              style={{ transform: `scale(${scale})` }}
             />
           ) : (
             <span className="text-xs text-neutral-500">بدون امضا</span>
@@ -368,7 +384,7 @@ function SignatoryRow({
         </div>
 
         {source ? (
-          <div className="space-y-1">
+          <div className="space-y-3">
             <div className="flex items-center justify-between gap-1" dir="ltr">
               <Button
                 variant="outline"
@@ -425,6 +441,68 @@ function SignatoryRow({
                 بدون چرخش
               </Button>
             ) : null}
+
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between gap-2">
+                <Label htmlFor={`signature-scale-${signatory.id}`} className="text-xs">
+                  اندازه امضا
+                </Label>
+                <span className="text-muted-foreground text-xs tabular-nums">
+                  {toPersianDigits(Math.round(scale * 100))}٪
+                </span>
+              </div>
+              <div className="flex items-center gap-2" dir="ltr">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="size-8 shrink-0"
+                  disabled={scale <= SIGNATURE_SCALE_MIN}
+                  aria-label="کوچک‌تر کردن امضا"
+                  title="کوچک‌تر کردن امضا"
+                  onClick={() =>
+                    onPatch({ signatureScale: normalizeSignatureScale(scale - SIGNATURE_SCALE_STEP) })
+                  }
+                >
+                  <ZoomOut className="size-4" />
+                </Button>
+                <input
+                  id={`signature-scale-${signatory.id}`}
+                  type="range"
+                  min={SIGNATURE_SCALE_MIN}
+                  max={SIGNATURE_SCALE_MAX}
+                  step={SIGNATURE_SCALE_STEP}
+                  value={scale}
+                  aria-label="اندازه امضا"
+                  className="accent-primary h-1.5 min-w-0 flex-1 cursor-pointer"
+                  onChange={(event) =>
+                    onPatch({ signatureScale: normalizeSignatureScale(event.target.valueAsNumber) })
+                  }
+                />
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="size-8 shrink-0"
+                  disabled={scale >= SIGNATURE_SCALE_MAX}
+                  aria-label="بزرگ‌تر کردن امضا"
+                  title="بزرگ‌تر کردن امضا"
+                  onClick={() =>
+                    onPatch({ signatureScale: normalizeSignatureScale(scale + SIGNATURE_SCALE_STEP) })
+                  }
+                >
+                  <ZoomIn className="size-4" />
+                </Button>
+              </div>
+              {scale !== SIGNATURE_SCALE_DEFAULT ? (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 w-full text-xs"
+                  onClick={() => onPatch({ signatureScale: SIGNATURE_SCALE_DEFAULT })}
+                >
+                  اندازه پیش‌فرض
+                </Button>
+              ) : null}
+            </div>
           </div>
         ) : null}
 
