@@ -1,10 +1,11 @@
 "use client";
 
-import { Eye, FileImage, FileText, Search, Trash2 } from "lucide-react";
+import { AlertTriangle, Eye, FileImage, FileText, Search, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { CertificateStage } from "@/components/certificate/certificate-stage";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -80,9 +81,25 @@ export function ArchiveTable() {
   }
 
   const previewTemplate = previewed ? findTemplate(previewed.templateId) : null;
+  const { capacity } = certificateRepository;
+  // Warn well before the archive starts refusing new certificates.
+  const nearlyFull = records.length >= capacity * 0.9;
 
   return (
     <div className="space-y-4">
+      {nearlyFull ? (
+        <Alert>
+          <AlertTriangle className="size-4" />
+          <AlertTitle>{records.length >= capacity ? "آرشیو پر است" : "آرشیو تقریباً پر است"}</AlertTitle>
+          <AlertDescription>
+            {`${toPersianDigits(records.length)} از ${toPersianDigits(capacity)} جای آرشیو این مرورگر پر شده است. `}
+            {records.length >= capacity
+              ? "تا چند گواهی قدیمی را حذف نکنید، گواهی تازه صادر نمی‌شود."
+              : "وقتی پر شود، صدور گواهی تازه متوقف می‌شود؛ چند گواهی قدیمی را حذف کنید."}
+          </AlertDescription>
+        </Alert>
+      ) : null}
+
       <div className="relative max-w-sm">
         <Search className="text-muted-foreground pointer-events-none absolute top-1/2 start-3 size-4 -translate-y-1/2" />
         <Input

@@ -8,4 +8,5 @@ import type { CertificateRepository } from "./types";
 export const certificateRepository: CertificateRepository = localCertificateRepository;
 
 export { notifyArchiveChanged, STORAGE_EVENT } from "./local-repository";
+export { ArchiveFullError } from "./types";
 export type { CertificateRecord, CertificateRepository } from "./types";

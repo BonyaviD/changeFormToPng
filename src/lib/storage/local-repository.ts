@@ -1,8 +1,8 @@
-import type { CertificateRecord, CertificateRepository } from "./types";
+import { ArchiveFullError, type CertificateRecord, type CertificateRepository } from "./types";
 
 const STORAGE_KEY = "sara.certificates.v1";
 /** Guard against filling the ~5MB origin quota during a large bulk run. */
-const MAX_RECORDS = 2000;
+export const MAX_RECORDS = 2000;
 
 function isBrowser() {
   return typeof window !== "undefined" && typeof window.localStorage !== "undefined";
@@ -23,9 +23,11 @@ function readAll(): CertificateRecord[] {
 
 function writeAll(records: CertificateRecord[]) {
   if (!isBrowser()) return;
-  const trimmed = records.slice(0, MAX_RECORDS);
+  // Never trim to fit: that silently deleted the oldest certificates. Callers
+  // check the room first, so reaching this is a last line of defence.
+  if (records.length > MAX_RECORDS) throw new ArchiveFullError(MAX_RECORDS);
   try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(trimmed));
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
   } catch (error) {
     throw new Error(
       "ذخیره‌سازی مرورگر پر شده است. چند گواهی قدیمی را از آرشیو حذف کنید.",
@@ -40,8 +42,14 @@ function sortRecords(records: CertificateRecord[]): CertificateRecord[] {
 }
 
 export const localCertificateRepository: CertificateRepository = {
+  capacity: MAX_RECORDS,
+
   async list() {
     return sortRecords(readAll());
+  },
+
+  async remaining() {
+    return Math.max(0, MAX_RECORDS - readAll().length);
   },
 
   async findBySerial(serial) {
@@ -57,7 +65,11 @@ export const localCertificateRepository: CertificateRepository = {
   async saveMany(records) {
     if (records.length === 0) return;
     const incomingIds = new Set(records.map((record) => record.id));
-    const existing = readAll().filter((item) => !incomingIds.has(item.id));
+    const all = readAll();
+    const existing = all.filter((item) => !incomingIds.has(item.id));
+    const added = records.length - (all.length - existing.length);
+    const available = Math.max(0, MAX_RECORDS - all.length);
+    if (added > available) throw new ArchiveFullError(MAX_RECORDS, added, available);
     writeAll(sortRecords([...records, ...existing]));
   },
 
