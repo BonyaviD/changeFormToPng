@@ -16,20 +16,25 @@ export async function POST(request: NextRequest) {
   const key = process.env.VERCEL === "1"
     ? (request.headers.get("x-vercel-forwarded-for")?.split(",")[0].trim() || "unknown")
     : "local";
-  if (!takeLoginAttempt(key)) {
-    const response = new NextResponse("تعداد تلاش‌های ورود زیاد است. ۱۵ دقیقه دیگر دوباره تلاش کنید.", {
-      status: 429, headers: { "Retry-After": "900", "Content-Type": "text/plain; charset=utf-8" },
-    });
-    return privateResponse(response);
-  }
+  // The body is capped at 4KB, so reading it before the limiter costs nothing,
+  // and it keeps the return path for the page that explains the refusal.
   const form = await readLoginForm(request);
   if (!form) return privateResponse(new NextResponse(null, { status: 400 }));
   const next = safeReturnPath(form.get("next"));
-  if (!(await verifyCredentials(form.get("username") ?? "", form.get("password") ?? "", config))) {
+  const backToLogin = (error: "invalid" | "limited") => {
     const url = new URL("/login", request.url);
-    url.searchParams.set("error", "invalid");
+    url.searchParams.set("error", error);
     url.searchParams.set("next", next);
-    return privateResponse(NextResponse.redirect(url, 303));
+    return NextResponse.redirect(url, 303);
+  };
+  if (!takeLoginAttempt(key)) {
+    // Back to the form, which explains the wait, rather than a bare text page.
+    const response = backToLogin("limited");
+    response.headers.set("Retry-After", "900");
+    return privateResponse(response);
+  }
+  if (!(await verifyCredentials(form.get("username") ?? "", form.get("password") ?? "", config))) {
+    return privateResponse(backToLogin("invalid"));
   }
   clearLoginAttempts(key);
   const response = NextResponse.redirect(new URL(next, request.url), 303);

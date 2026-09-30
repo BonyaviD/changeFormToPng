@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { randomBytes } from "node:crypto";
 import { createSession, getAuthConfig, hashPassword, safeReturnPath, SESSION_SECONDS, verifyCredentials, verifySession } from "../src/lib/auth/core";
-import { takeLoginAttempt } from "../src/lib/auth/rate-limit";
+import { MAX_TRACKED, takeLoginAttempt } from "../src/lib/auth/rate-limit";
 import { loginPage } from "../src/lib/auth/login-page";
 
 test("passwords are salted, hashed and verified without username disclosure", async () => {
@@ -62,6 +62,16 @@ test("failed-attempt limiter rejects bursts and expires", () => {
   for (let i = 0; i < 10; i++) assert.equal(takeLoginAttempt(key, 1000), true);
   assert.equal(takeLoginAttempt(key, 1001), false);
   assert.equal(takeLoginAttempt(key, 1000 + 900000), true);
+});
+
+test("a full limiter table still admits new addresses and drops the oldest", () => {
+  // Far enough ahead that every earlier test's window has expired.
+  const now = 10 ** 12;
+  for (let i = 0; i < MAX_TRACKED; i++) assert.equal(takeLoginAttempt(`flood-${i}`, now), true);
+  assert.equal(takeLoginAttempt("real-user", now), true, "a new address is not locked out");
+  // The oldest entry made room, so it starts a fresh window; a newer one keeps its count.
+  for (let i = 0; i < 9; i++) takeLoginAttempt(`flood-${MAX_TRACKED - 1}`, now);
+  assert.equal(takeLoginAttempt(`flood-${MAX_TRACKED - 1}`, now), false);
 });
 
 test("absent server secrets fail closed", () => {

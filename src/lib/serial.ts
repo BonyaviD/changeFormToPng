@@ -7,7 +7,9 @@
  */
 export function generateSerial(): string {
   const timestamp = Date.now().toString(36).toUpperCase();
-  const random = Math.random().toString(36).slice(2, 6).toUpperCase();
+  // Math.random is not meant for identifiers, and its slice could come up short.
+  const [value] = crypto.getRandomValues(new Uint32Array(1));
+  const random = (value % 36 ** 4).toString(36).padStart(4, "0").toUpperCase();
   return `${timestamp}-${random}`;
 }
 

@@ -40,5 +40,5 @@ test("the fingerprint ignores key order but not values, types or template", () =
 test("generated serials are upper-case and distinct", () => {
   const serials = new Set(Array.from({ length: 200 }, generateSerial));
   assert.equal(serials.size, 200);
-  for (const serial of serials) assert.match(serial, /^[0-9A-Z]+-[0-9A-Z]{1,4}$/);
+  for (const serial of serials) assert.match(serial, /^[0-9A-Z]+-[0-9A-Z]{4}$/);
 });
