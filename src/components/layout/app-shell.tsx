@@ -15,6 +15,7 @@ import { useId, type ReactNode } from "react";
 
 import { ThemeToggle } from "@/components/theme-toggle";
 import { SessionGuard } from "@/components/auth/session-guard";
+import { useArchiveLocation } from "@/hooks/use-archive";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -181,6 +182,7 @@ function F1Car({ className }: { className?: string }) {
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const archiveLocation = useArchiveLocation();
 
   return (
     <div className="app-shell flex min-h-dvh flex-col">
@@ -253,7 +255,11 @@ export function AppShell({ children }: { children: ReactNode }) {
             <F1Car className="f1-footer-car" />
           </div>
 
-          <p className="flex-1 text-center">همه‌ی داده‌ها فقط در همین مرورگر ذخیره می‌شود.</p>
+          <p className="flex-1 text-center">
+            {archiveLocation === "server"
+              ? "آرشیو گواهی‌ها روی سرور مشترک است؛ تنظیمات و امضاها در همین مرورگر ذخیره می‌شوند."
+              : "همه‌ی داده‌ها فقط در همین مرورگر ذخیره می‌شود."}
+          </p>
 
           <div className="f1-footer-badge-slot">
             <span className="f1-mode-badge" aria-hidden="true" dir="ltr">

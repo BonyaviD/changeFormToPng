@@ -25,7 +25,12 @@ import { useSettings } from "@/hooks/use-settings";
 import { certificateFingerprint, claimSerial, type IssuedCertificate } from "@/lib/serial";
 import { buildArtworkContext } from "@/lib/settings/artwork-context";
 import { downloadCertificate, type ExportFormat } from "@/lib/render/export";
-import { ArchiveFullError, certificateRepository, notifyArchiveChanged } from "@/lib/storage";
+import {
+  certificateRepository,
+  ensureArchiveRoom,
+  notifyArchiveChanged,
+  snapshotArtwork,
+} from "@/lib/storage";
 import { DEFAULT_TEMPLATE_ID, getTemplate } from "@/lib/templates/registry";
 import type { ArtworkContext } from "@/lib/templates/types";
 
@@ -96,11 +101,15 @@ export function IssueWorkspace() {
   }
 
   const persist = useCallback(
-    async (validated: Values, trackingNumber: string) => {
+    async (validated: Values, trackingNumber: string, drawnWith: ArtworkContext) => {
       // Unchanged content is one certificate. Downloading it as PNG and then
       // as PDF, or saving after downloading, must update the same archive row
       // rather than filing the same serial twice.
       const existing = await certificateRepository.findBySerial(trackingNumber);
+      // Keep the signatures and watermark it was drawn with, so a re-issue
+      // matches it even after the settings change.
+      const { artwork, assets } = await snapshotArtwork(drawnWith, validated);
+      await certificateRepository.saveAssets(assets);
 
       await certificateRepository.save({
         id: existing?.id ?? crypto.randomUUID(),
@@ -111,6 +120,7 @@ export function IssueWorkspace() {
         summary: template.summarize(validated),
         issuedAt: existing?.issuedAt ?? new Date().toISOString(),
         source: "single",
+        artwork,
       });
       notifyArchiveChanged();
     },
@@ -118,11 +128,9 @@ export function IssueWorkspace() {
   );
 
   /** Refuses before rendering, so a full archive never costs an unrecorded download. */
-  async function ensureArchiveRoom(trackingNumber: string) {
+  async function ensureRoomFor(trackingNumber: string) {
     if (await certificateRepository.findBySerial(trackingNumber)) return;
-    if ((await certificateRepository.remaining()) < 1) {
-      throw new ArchiveFullError(certificateRepository.capacity);
-    }
+    await ensureArchiveRoom(1);
   }
 
   const onExport = (format: ExportFormat) =>
@@ -131,9 +139,9 @@ export function IssueWorkspace() {
         const trackingNumber = claimTrackingNumber(validated);
         setBusy(format);
         try {
-          await ensureArchiveRoom(trackingNumber);
+          await ensureRoomFor(trackingNumber);
           await downloadCertificate(template, validated, context, format);
-          await persist(validated, trackingNumber);
+          await persist(validated, trackingNumber, context);
           toast.success(
             format === "pdf" ? "فایل PDF دانلود شد." : "تصویر گواهی دانلود شد.",
             { description: `شماره پیگیری: ${trackingNumber}` },
@@ -155,7 +163,7 @@ export function IssueWorkspace() {
       const trackingNumber = claimTrackingNumber(validated);
       setBusy("save");
       try {
-        await persist(validated, trackingNumber);
+        await persist(validated, trackingNumber, context);
         toast.success("گواهی در آرشیو ذخیره شد.", {
           description: `شماره پیگیری: ${trackingNumber}`,
         });

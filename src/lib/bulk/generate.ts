@@ -5,7 +5,7 @@ import { renderCertificatePdf, renderCertificatePng } from "@/lib/render/export"
 import { generateSerial } from "@/lib/serial";
 import { buildArtworkContext } from "@/lib/settings/artwork-context";
 import { readSettings } from "@/lib/settings/store";
-import type { CertificateRecord } from "@/lib/storage";
+import { snapshotArtwork, type CertificateRecord } from "@/lib/storage";
 import type { CertificateTemplate } from "@/lib/templates/types";
 
 import type { MappedRow } from "./mapping";
@@ -23,6 +23,8 @@ export interface BulkProgress {
 export interface BulkResult {
   zip: Blob;
   records: CertificateRecord[];
+  /** The images the records' artwork snapshots refer to, stored once each. */
+  assets: Record<string, string>;
 }
 
 /**
@@ -46,6 +48,7 @@ export async function generateBulkArchive(
 
   const zip = new JSZip();
   const records: CertificateRecord[] = [];
+  const assets: Record<string, string> = {};
   const usedNames = new Set<string>();
   // Read once: the catalogue cannot change midway through a run.
   const settings = readSettings();
@@ -60,6 +63,8 @@ export async function generateBulkArchive(
         : await renderCertificatePng(template, row.values, context);
 
     zip.file(uniqueName(usedNames, template.fileStem(row.values), options.format), blob);
+    const snapshot = await snapshotArtwork(context, row.values);
+    Object.assign(assets, snapshot.assets);
 
     records.push({
       id: crypto.randomUUID(),
@@ -70,6 +75,7 @@ export async function generateBulkArchive(
       summary: template.summarize(row.values),
       issuedAt: new Date().toISOString(),
       source: "bulk",
+      artwork: snapshot.artwork,
     });
 
     onProgress?.({
@@ -82,6 +88,7 @@ export async function generateBulkArchive(
   return {
     zip: await zip.generateAsync({ type: "blob" }),
     records,
+    assets,
   };
 }
 

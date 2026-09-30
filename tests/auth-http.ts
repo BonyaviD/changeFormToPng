@@ -24,7 +24,7 @@ async function main() {
   assert.ok(nonce && page.headers.get("content-security-policy")?.includes(`'nonce-${nonce}'`));
   assert.ok(loginHtml.includes('id="toggle-password"'));
   assert.ok(!loginHtml.includes(password));
-  for (const path of ["/", "/bulk", "/settings", "/history", "/verify", "/templates/halal-training/frame.png", "/favicon.ico", "/_next/static/unknown.js", "/api/auth/session"]) {
+  for (const path of ["/", "/bulk", "/settings", "/history", "/verify", "/templates/halal-training/frame.png", "/favicon.ico", "/_next/static/unknown.js", "/api/auth/session", "/api/archive", "/api/archive/usage", "/api/archive/records", "/api/archive/records?serial=X", "/api/archive/assets?ids=x"]) {
     assert.equal((await request(path)).status, 401, `unauthenticated ${path}`);
   }
   const redirect = await request("/settings", { headers: { Accept: "text/html" } });
