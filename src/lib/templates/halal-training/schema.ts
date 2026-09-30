@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { parseJalali, type JalaliDate } from "@/lib/jalali";
+import { looksGregorian, parseJalali, type JalaliDate } from "@/lib/jalali";
 import { toLatinDigits } from "@/lib/persian";
 
 export const GENDER_OPTIONS = [
@@ -35,7 +35,16 @@ const jalaliDate = (label: string) =>
     .string({ required_error: `${label} الزامی است` })
     .trim()
     .min(1, `${label} الزامی است`)
-    .refine((value) => parseJalali(value) !== null, `${label} معتبر نیست`);
+    .superRefine((value, ctx) => {
+      if (parseJalali(value) !== null) return;
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        // Spreadsheets hand back date-formatted cells in the Gregorian calendar.
+        message: looksGregorian(value)
+          ? `${label} باید شمسی باشد، نه میلادی`
+          : `${label} معتبر نیست`,
+      });
+    });
 
 /** Orders two Jalali dates without going through the Gregorian calendar. */
 function compareJalali(a: JalaliDate, b: JalaliDate): number {

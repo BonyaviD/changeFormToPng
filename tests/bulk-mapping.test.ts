@@ -8,7 +8,13 @@ import {
   halalTrainingSchema,
   type HalalTrainingValues,
 } from "../src/lib/templates/halal-training/schema";
+import type { SheetTable } from "../src/lib/bulk/parse";
 import type { CertificateTemplate } from "../src/lib/templates/types";
+
+/** A sheet with no blank rows, so data row `i` is spreadsheet row `i + 2`. */
+function sheet(headers: string[], rows: string[][]): SheetTable {
+  return { headers, rows, lines: rows.map((_, index) => index + 2) };
+}
 
 // The real certificate schema behind a field list shaped like the real form.
 // The shipped template module also pulls in the React artwork and fonts.
@@ -79,10 +85,9 @@ const template: CertificateTemplate<HalalTrainingValues> = {
 const headers = ["نام", "نام پدر", "کد ملی", "دوره", "کد دوره", "تاریخ برگزاری", "جنسیت", "نحوه برگزاری"];
 
 test("Persian headers, aliases, numerals and option labels map onto valid values", () => {
-  const { rows, unmatchedHeaders } = mapSheetToRows(template, {
-    headers,
-    rows: [["مهسا میهن‌دوست", "مسیب", "۱۴۸-۰۱۸۰۰۱۴", "حلال", "400/617", "۱۴۰۴/۵/۱۲", "زن", "حضوری"]],
-  });
+  const { rows, unmatchedHeaders } = mapSheetToRows(template, sheet(headers, [
+    ["مهسا میهن‌دوست", "مسیب", "۱۴۸-۰۱۸۰۰۱۴", "حلال", "400/617", "۱۴۰۴/۵/۱۲", "زن", "حضوری"],
+  ]));
 
   assert.deepEqual(unmatchedHeaders, []);
   assert.equal(rows[0].valid, true, JSON.stringify(rows[0].errors));
@@ -108,34 +113,30 @@ test("Persian headers, aliases, numerals and option labels map onto valid values
 });
 
 test("Arabic-keyboard letters, spacing and case in headers still match", () => {
-  const { rows, unmatchedHeaders } = mapSheetToRows(template, {
-    headers: ["Full_Name", "نام  پدر", "كد ملي", "Course", "کد دوره"],
-    rows: [["Ali", "Reza", "12345678", "حلال", "1"]],
-  });
+  const { rows, unmatchedHeaders } = mapSheetToRows(template, sheet(
+    ["Full_Name", "نام  پدر", "كد ملي", "Course", "کد دوره"],
+    [["Ali", "Reza", "12345678", "حلال", "1"]],
+  ));
   assert.deepEqual(unmatchedHeaders, []);
   assert.equal(rows[0].valid, true, JSON.stringify(rows[0].errors));
 });
 
 test("a blank cell falls back to the template default instead of failing", () => {
-  const { rows } = mapSheetToRows(template, {
-    headers,
-    rows: [["علی", "رضا", "12345678", "حلال", "1", "1404-05-12", "مرد", ""]],
-  });
+  const { rows } = mapSheetToRows(template, sheet(headers, [
+    ["علی", "رضا", "12345678", "حلال", "1", "1404-05-12", "مرد", ""],
+  ]));
   assert.equal(rows[0].valid, true, JSON.stringify(rows[0].errors));
   assert.equal(rows[0].values.attendance, "remote");
 });
 
 test("bad rows are flagged with the field that is wrong, and good rows still pass", () => {
-  const { rows } = mapSheetToRows(template, {
-    headers: [...headers, "تاریخ صدور"],
-    rows: [
-      ["", "رضا", "12345678", "حلال", "1", "1404-05-12", "مرد", "حضوری", "1404-06-01"],
-      ["علی", "رضا", "123", "حلال", "1", "1404-13-01", "مرد", "حضوری", "1404-06-01"],
-      ["علی", "رضا", "12345678", "حلال", "1", "1404-05-12", "نامشخص", "حضوری", "1404-06-01"],
-      ["علی", "رضا", "12345678", "حلال", "1", "1404-05-12", "مرد", "حضوری", "1404-05-01"],
-      ["علی", "رضا", "12345678", "حلال", "1", "1404-05-12", "مرد", "حضوری", "1404-06-01"],
-    ],
-  });
+  const { rows } = mapSheetToRows(template, sheet([...headers, "تاریخ صدور"], [
+    ["", "رضا", "12345678", "حلال", "1", "1404-05-12", "مرد", "حضوری", "1404-06-01"],
+    ["علی", "رضا", "123", "حلال", "1", "1404-13-01", "مرد", "حضوری", "1404-06-01"],
+    ["علی", "رضا", "12345678", "حلال", "1", "1404-05-12", "نامشخص", "حضوری", "1404-06-01"],
+    ["علی", "رضا", "12345678", "حلال", "1", "1404-05-12", "مرد", "حضوری", "1404-05-01"],
+    ["علی", "رضا", "12345678", "حلال", "1", "1404-05-12", "مرد", "حضوری", "1404-06-01"],
+  ]));
 
   assert.deepEqual(rows.map((row) => row.valid), [false, false, false, false, true]);
   assert.deepEqual(Object.keys(rows[0].errors), ["fullName"]);
@@ -148,14 +149,14 @@ test("bad rows are flagged with the field that is wrong, and good rows still pas
 
 test("a yes in a switch column turns on the fields that depend on it", () => {
   const base = ["علی", "رضا", "12345678", "حلال", "1", "1404-05-12", "مرد", "حضوری"];
-  const { rows } = mapSheetToRows(template, {
-    headers: [...headers, "دو امضا", "نام امضاکننده دوم", "سمت امضاکننده دوم"],
-    rows: [
+  const { rows } = mapSheetToRows(template, sheet(
+    [...headers, "دو امضا", "نام امضاکننده دوم", "سمت امضاکننده دوم"],
+    [
       [...base, "بله", "", ""],
       [...base, "۱", "دکتر ب", "مدیرکل"],
       [...base, "خیر", "", ""],
     ],
-  });
+  ));
 
   assert.equal(rows[0].values.dualSignature, true);
   assert.deepEqual(Object.keys(rows[0].errors), ["secondSignatoryName", "secondSignatoryTitle"]);
@@ -165,10 +166,7 @@ test("a yes in a switch column turns on the fields that depend on it", () => {
 });
 
 test("unknown columns and columns with no default are reported", () => {
-  const { unmatchedHeaders, missingFields } = mapSheetToRows(template, {
-    headers: ["نام", "ایمیل", ""],
-    rows: [["علی", "a@b.c", ""]],
-  });
+  const { unmatchedHeaders, missingFields } = mapSheetToRows(template, sheet(["نام", "ایمیل", ""], [["علی", "a@b.c", ""]]));
 
   assert.deepEqual(unmatchedHeaders, ["ایمیل"]);
   const missing = missingFields.map((field) => field.name);
@@ -187,4 +185,24 @@ test("the import template opens in Excel as UTF-8 and quotes awkward cells", () 
   assert.ok(!header.includes("نام امضاکننده,"), "excluded fields have no column");
   assert.ok(example.includes('"مهسا, ""میهن‌دوست"""'));
   assert.ok(example.includes(",زن,"), "options are written as their Persian label");
+});
+
+test("errors point at the spreadsheet row, even after blank rows", () => {
+  const { rows } = mapSheetToRows(template, {
+    headers,
+    rows: [
+      ["علی", "رضا", "12345678", "حلال", "1", "1404-05-12", "مرد", "حضوری"],
+      ["", "رضا", "12345678", "حلال", "1", "1404-05-12", "مرد", "حضوری"],
+    ],
+    lines: [2, 5],
+  });
+  assert.deepEqual(rows.map((row) => [row.line, row.valid]), [[2, true], [5, false]]);
+});
+
+test("a Gregorian date from a spreadsheet is refused, not printed as a Jalali year", () => {
+  const { rows } = mapSheetToRows(template, sheet(headers, [
+    ["علی", "رضا", "12345678", "حلال", "1", "2025-08-03", "مرد", "حضوری"],
+  ]));
+  assert.equal(rows[0].valid, false);
+  assert.match(rows[0].errors.heldDate, /شمسی باشد، نه میلادی/);
 });

@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "test": "node scripts/typescript-runner.cjs tests/auth.test.ts tests/watermark.test.ts tests/archive.test.ts tests/serial.test.ts tests/jalali.test.ts tests/bulk-mapping.test.ts",
+    "test": "node scripts/typescript-runner.cjs tests/auth.test.ts tests/watermark.test.ts tests/archive.test.ts tests/serial.test.ts tests/jalali.test.ts tests/bulk-mapping.test.ts tests/bulk-parse.test.ts",
     "auth:setup": "node scripts/typescript-runner.cjs scripts/configure-auth.ts"
   },
   "dependencies": {

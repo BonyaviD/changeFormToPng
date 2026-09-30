@@ -41,6 +41,15 @@ export const JALALI_WEEKDAYS_SHORT = ["ش", "ی", "د", "س", "چ", "پ", "ج"] 
 
 const STORAGE_PATTERN = /^(\d{4})-(\d{1,2})-(\d{1,2})$/;
 
+/**
+ * Years a certificate date can plausibly fall in. The calendar arithmetic is
+ * valid far outside this range, which is exactly the problem: a Gregorian
+ * `2025-03-21` (what Excel hands back for a date-formatted cell) is also a
+ * valid Jalali date in the year 2025, and would be printed as one.
+ */
+export const JALALI_MIN_YEAR = 1300;
+export const JALALI_MAX_YEAR = 1499;
+
 export function isJalaliDate(value: unknown): value is JalaliDate {
   return (
     typeof value === "object" &&
@@ -62,7 +71,14 @@ export function parseJalali(value: string | null | undefined): JalaliDate | null
     month: Number(match[2]),
     day: Number(match[3]),
   };
+  if (date.year < JALALI_MIN_YEAR || date.year > JALALI_MAX_YEAR) return null;
   return isValidJalaaliDate(date.year, date.month, date.day) ? date : null;
+}
+
+/** True for input shaped like a Gregorian date — `2025-03-21`, `2025/3/21`. */
+export function looksGregorian(value: string | null | undefined): boolean {
+  const match = STORAGE_PATTERN.exec(toLatinDigits(value ?? "").trim().replace(/[/.]/g, "-"));
+  return match !== null && Number(match[1]) >= 1900 && Number(match[1]) <= 2199;
 }
 
 /** `{ year: 1404, month: 2, day: 4 }` → `"1404-02-04"`. */
