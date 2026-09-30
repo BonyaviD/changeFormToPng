@@ -3,7 +3,7 @@ import type { RecordSummary } from "@/lib/templates/types";
 
 export interface CertificateRecord {
   id: string;
-  /** Short human-quotable code, also encoded in the verification QR. */
+  /** Short human-quotable code the archive and the verify page look it up by. */
   serial: string;
   templateId: string;
   templateVersion: number;
