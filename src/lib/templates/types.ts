@@ -91,9 +91,9 @@ export interface ArtworkContext {
    */
   serial?: string;
   /**
-   * Scanned signatures from the settings catalogue, keyed by signatory name.
-   * A certificate records the printed *name*, not the image bytes, so a
-   * re-issue picks up whatever signature is on file for that person today.
+   * Scanned signatures, keyed by the printed signatory name. A new certificate
+   * takes them from the settings catalogue; a re-issue from the archive takes
+   * the ones saved with the record, so it matches the original.
    */
   signatureImages?: Readonly<Record<string, string>>;
   /** Per-signatory visual zoom, keyed by the same printed name. */

@@ -4,6 +4,12 @@ import readXlsxFile from "read-excel-file";
 export interface SheetTable {
   headers: string[];
   rows: string[][];
+  /**
+   * The spreadsheet row number of each entry in `rows`, 1-based as the
+   * spreadsheet shows it. Blank rows are dropped, so this is not simply the
+   * index plus two: an error must point at the row the operator will look at.
+   */
+  lines: number[];
 }
 
 const CSV_EXTENSIONS = [".csv", ".tsv", ".txt"];
@@ -34,16 +40,21 @@ export async function parseSpreadsheet(file: File): Promise<SheetTable> {
 
   const [headerRow, ...dataRows] = table;
   const headers = headerRow.map(cellToString);
-  const rows = dataRows
-    .map((row) => headers.map((_, index) => cellToString(row[index])))
-    // Trailing blank rows are extremely common in hand-made spreadsheets.
-    .filter((row) => row.some((cell) => cell !== ""));
+  const rows: string[][] = [];
+  const lines: number[] = [];
+  dataRows.forEach((row, index) => {
+    const cells = headers.map((_, column) => cellToString(row[column]));
+    // Blank rows are extremely common in hand-made spreadsheets.
+    if (!cells.some((cell) => cell !== "")) return;
+    rows.push(cells);
+    lines.push(index + 2); // +1 for the header row, +1 for 1-based numbering
+  });
 
   if (rows.length === 0) {
     throw new Error("فایل هیچ ردیف داده‌ای ندارد.");
   }
 
-  return { headers, rows };
+  return { headers, rows, lines };
 }
 
 async function parseXlsx(file: File): Promise<unknown[][]> {
@@ -52,7 +63,11 @@ async function parseXlsx(file: File): Promise<unknown[][]> {
 
 async function parseCsv(file: File): Promise<unknown[][]> {
   const text = await file.text();
-  const result = Papa.parse<string[]>(text, { skipEmptyLines: true });
+  // Blank lines are kept so every record keeps its row number, and the caller
+  // drops them after numbering. A blank line has no delimiter in it, though,
+  // which defeats auto-detection, so the delimiter is found first without them.
+  const { delimiter } = Papa.parse<string[]>(text, { skipEmptyLines: true, preview: 50 }).meta;
+  const result = Papa.parse<string[]>(text, { delimiter, skipEmptyLines: false });
   if (result.errors.length > 0) {
     throw new Error(`خواندن فایل ناموفق بود: ${result.errors[0].message}`);
   }

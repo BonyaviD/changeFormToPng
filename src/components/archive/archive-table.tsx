@@ -1,10 +1,11 @@
 "use client";
 
-import { Eye, FileImage, FileText, Search, Trash2 } from "lucide-react";
+import { AlertTriangle, Eye, FileImage, FileText, Search, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { CertificateStage } from "@/components/certificate/certificate-stage";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -27,14 +28,14 @@ import { formatJalaliLong } from "@/lib/jalali";
 import { dateToJalali } from "@/lib/jalali";
 import { toPersianDigits } from "@/lib/persian";
 import { downloadCertificate, type ExportFormat } from "@/lib/render/export";
-import { certificateRepository, notifyArchiveChanged } from "@/lib/storage";
+import { artworkContextFor, certificateRepository, notifyArchiveChanged } from "@/lib/storage";
 import type { CertificateRecord } from "@/lib/storage";
+import { useRecordArtwork } from "@/hooks/use-record-artwork";
 import { useSettings } from "@/hooks/use-settings";
-import { buildArtworkContext } from "@/lib/settings/artwork-context";
 import { findTemplate } from "@/lib/templates/registry";
 
 export function ArchiveTable() {
-  const { records, loading } = useArchive();
+  const { records, loading, capacity, location, error } = useArchive();
   const { settings } = useSettings();
   const [query, setQuery] = useState("");
   const [previewed, setPreviewed] = useState<CertificateRecord | null>(null);
@@ -60,10 +61,11 @@ export function ArchiveTable() {
 
     setBusyId(record.id);
     try {
+      // Drawn as issued: the signatures and watermark saved with the record.
       await downloadCertificate(
         template,
         record.values,
-        buildArtworkContext(settings, record.serial),
+        await artworkContextFor(record, settings),
         format,
       );
     } catch (error) {
@@ -74,15 +76,43 @@ export function ArchiveTable() {
   }
 
   async function remove(record: CertificateRecord) {
-    await certificateRepository.remove(record.id);
-    notifyArchiveChanged();
-    toast.success("گواهی از آرشیو حذف شد.");
+    try {
+      await certificateRepository.remove(record.id);
+      notifyArchiveChanged();
+      toast.success("گواهی از آرشیو حذف شد.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "حذف گواهی ناموفق بود.");
+    }
   }
 
   const previewTemplate = previewed ? findTemplate(previewed.templateId) : null;
+  const previewContext = useRecordArtwork(previewed, settings);
+  // Warn well before the archive starts refusing new certificates.
+  const nearlyFull = capacity !== null && records.length >= capacity * 0.9;
 
   return (
     <div className="space-y-4">
+      {error ? (
+        <Alert variant="destructive">
+          <AlertTriangle className="size-4" />
+          <AlertTitle>آرشیو خوانده نشد</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      ) : null}
+
+      {nearlyFull && capacity !== null ? (
+        <Alert>
+          <AlertTriangle className="size-4" />
+          <AlertTitle>{records.length >= capacity ? "آرشیو پر است" : "آرشیو تقریباً پر است"}</AlertTitle>
+          <AlertDescription>
+            {`${toPersianDigits(records.length)} از ${toPersianDigits(capacity)} جای آرشیو پر شده است. `}
+            {records.length >= capacity
+              ? "تا چند گواهی قدیمی را حذف نکنید، گواهی تازه صادر نمی‌شود."
+              : "وقتی پر شود، صدور گواهی تازه متوقف می‌شود؛ چند گواهی قدیمی را حذف کنید."}
+          </AlertDescription>
+        </Alert>
+      ) : null}
+
       <div className="relative max-w-sm">
         <Search className="text-muted-foreground pointer-events-none absolute top-1/2 start-3 size-4 -translate-y-1/2" />
         <Input
@@ -180,7 +210,8 @@ export function ArchiveTable() {
 
       {records.length > 0 ? (
         <p className="text-muted-foreground text-xs">
-          {toPersianDigits(records.length)} گواهی در این مرورگر ذخیره شده است.
+          {toPersianDigits(records.length)} گواهی{" "}
+          {location === "server" ? "در آرشیو مشترک روی سرور" : "در این مرورگر"} ذخیره شده است.
         </p>
       ) : null}
 
@@ -189,12 +220,12 @@ export function ArchiveTable() {
           <DialogHeader>
             <DialogTitle>{previewed?.summary.primary}</DialogTitle>
           </DialogHeader>
-          {previewed && previewTemplate ? (
+          {previewed && previewTemplate && previewContext ? (
             <div className="overflow-hidden rounded-md border">
               <CertificateStage
                 template={previewTemplate}
                 values={previewed.values}
-                context={buildArtworkContext(settings, previewed.serial)}
+                context={previewContext}
               />
             </div>
           ) : null}

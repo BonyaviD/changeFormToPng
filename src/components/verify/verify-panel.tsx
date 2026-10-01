@@ -11,8 +11,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { dateToJalali, formatJalaliLong } from "@/lib/jalali";
 import { certificateRepository, type CertificateRecord } from "@/lib/storage";
+import { useArchiveLocation } from "@/hooks/use-archive";
+import { useRecordArtwork } from "@/hooks/use-record-artwork";
 import { useSettings } from "@/hooks/use-settings";
-import { buildArtworkContext } from "@/lib/settings/artwork-context";
 import { findTemplate } from "@/lib/templates/registry";
 import { cn } from "@/lib/utils";
 
@@ -20,11 +21,20 @@ type LookupState =
   | { status: "idle" }
   | { status: "searching" }
   | { status: "found"; record: CertificateRecord }
-  | { status: "missing"; serial: string };
+  | { status: "missing"; serial: string }
+  | { status: "error"; message: string };
+
+function lookupFailed(error: unknown): LookupState {
+  return {
+    status: "error",
+    message: error instanceof Error ? error.message : "استعلام ناموفق بود.",
+  };
+}
 
 export function VerifyPanel() {
   const searchParams = useSearchParams();
   const { settings } = useSettings();
+  const location = useArchiveLocation();
   // A `?serial=` link seeds the field directly. (This subtree is inside a
   // Suspense boundary, so the client owns the render and there is nothing to
   // reconcile against.)
@@ -47,7 +57,7 @@ export function VerifyPanel() {
       if (!trimmed) return;
 
       setState({ status: "searching" });
-      setState(await resolve(trimmed));
+      setState(await resolve(trimmed).catch(lookupFailed));
     },
     [resolve],
   );
@@ -58,17 +68,20 @@ export function VerifyPanel() {
     if (!serialFromUrl) return;
 
     let cancelled = false;
-    void resolve(serialFromUrl).then((next) => {
-      if (!cancelled) setState(next);
-    });
+    void resolve(serialFromUrl)
+      .catch(lookupFailed)
+      .then((next) => {
+        if (!cancelled) setState(next);
+      });
 
     return () => {
       cancelled = true;
     };
   }, [serialFromUrl, resolve]);
 
-  const template =
-    state.status === "found" ? findTemplate(state.record.templateId) : null;
+  const found = state.status === "found" ? state.record : null;
+  const template = found ? findTemplate(found.templateId) : null;
+  const context = useRecordArtwork(found, settings);
 
   return (
     <div className="space-y-6">
@@ -101,45 +114,54 @@ export function VerifyPanel() {
           <XCircle className="size-4" />
           <AlertTitle>گواهی‌ای با این شماره پیدا نشد</AlertTitle>
           <AlertDescription>
-            شماره «{state.serial}» در آرشیو این مرورگر ثبت نشده است.
+            شماره «{state.serial}» در {location === "server" ? "آرشیو" : "آرشیو این مرورگر"}{" "}
+            ثبت نشده است.
           </AlertDescription>
         </Alert>
       ) : null}
 
-      {state.status === "found" && template ? (
+      {state.status === "error" ? (
+        <Alert variant="destructive">
+          <XCircle className="size-4" />
+          <AlertTitle>استعلام انجام نشد</AlertTitle>
+          <AlertDescription>{state.message}</AlertDescription>
+        </Alert>
+      ) : null}
+
+      {found && template ? (
         <div className="space-y-4">
           <Alert>
             <BadgeCheck className="text-success size-4" />
             <AlertTitle>گواهی معتبر است</AlertTitle>
             <AlertDescription>
-              {state.record.summary.primary} — {state.record.summary.secondary} · صادرشده
-              در {formatJalaliLong(dateToJalali(new Date(state.record.issuedAt)))}
+              {found.summary.primary} — {found.summary.secondary} · صادرشده
+              در {formatJalaliLong(dateToJalali(new Date(found.issuedAt)))}
             </AlertDescription>
           </Alert>
 
           <Card className="overflow-hidden py-0">
             <div className="bg-muted/40 p-4">
               <div className="mx-auto max-w-3xl overflow-hidden rounded-md shadow">
-                <CertificateStage
-                  template={template}
-                  values={state.record.values}
-                  context={buildArtworkContext(settings, state.record.serial)}
-                />
+                {context ? (
+                  <CertificateStage template={template} values={found.values} context={context} />
+                ) : null}
               </div>
             </div>
           </Card>
         </div>
       ) : null}
 
-      <Alert>
-        <Info className="size-4" />
-        <AlertTitle>محدوده‌ی استعلام</AlertTitle>
-        <AlertDescription>
-          آرشیو گواهی‌ها در همین مرورگر نگهداری می‌شود، بنابراین استعلام فقط
-          گواهی‌هایی را می‌شناسد که روی همین دستگاه صادر شده‌اند. برای استعلام سراسری
-          باید آرشیو روی یک سرور مشترک قرار بگیرد.
-        </AlertDescription>
-      </Alert>
+      {location === "browser" ? (
+        <Alert>
+          <Info className="size-4" />
+          <AlertTitle>محدوده‌ی استعلام</AlertTitle>
+          <AlertDescription>
+            آرشیو گواهی‌ها در همین مرورگر نگهداری می‌شود، بنابراین استعلام فقط
+            گواهی‌هایی را می‌شناسد که روی همین دستگاه صادر شده‌اند. برای استعلام از
+            هر دستگاهی، مدیر سامانه باید آرشیو مشترک روی سرور را فعال کند.
+          </AlertDescription>
+        </Alert>
+      ) : null}
     </div>
   );
 }

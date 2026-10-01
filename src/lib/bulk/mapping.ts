@@ -113,7 +113,7 @@ export function mapSheetToRows(
     }
 
     return {
-      line: rowIndex + 2, // +1 for the header row, +1 for 1-based numbering
+      line: table.lines[rowIndex],
       values: parsed.success ? (parsed.data as Record<string, unknown>) : raw,
       errors,
       valid: parsed.success,

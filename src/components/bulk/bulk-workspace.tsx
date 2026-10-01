@@ -35,7 +35,7 @@ import { buildImportTemplateCsv, mapSheetToRows, type MappingResult } from "@/li
 import { parseSpreadsheet } from "@/lib/bulk/parse";
 import { toPersianDigits } from "@/lib/persian";
 import { downloadBlob } from "@/lib/render/download";
-import { certificateRepository, notifyArchiveChanged } from "@/lib/storage";
+import { certificateRepository, ensureArchiveRoom, notifyArchiveChanged } from "@/lib/storage";
 import { useSettings } from "@/hooks/use-settings";
 import { buildArtworkContext } from "@/lib/settings/artwork-context";
 import { DEFAULT_TEMPLATE_ID, getTemplate } from "@/lib/templates/registry";
@@ -80,7 +80,11 @@ export function BulkWorkspace() {
     setProgress({ completed: 0, total: validCount, currentLabel: "" });
 
     try {
-      const { zip, records } = await generateBulkArchive(
+      // Every row becomes a new archive record. Check before rendering, so a
+      // full archive stops the run instead of losing its records afterwards.
+      await ensureArchiveRoom(validCount);
+
+      const { zip, records, assets } = await generateBulkArchive(
         template,
         mapping.rows,
         { format: asPdf ? "pdf" : "png" },
@@ -88,6 +92,7 @@ export function BulkWorkspace() {
       );
 
       downloadBlob(zip, `certificates-${new Date().toISOString().slice(0, 10)}.zip`);
+      await certificateRepository.saveAssets(assets);
       await certificateRepository.saveMany(records);
       notifyArchiveChanged();
 

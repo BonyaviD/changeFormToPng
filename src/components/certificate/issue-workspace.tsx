@@ -22,10 +22,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { toPersianDigits } from "@/lib/persian";
 import { useSettings } from "@/hooks/use-settings";
-import { generateSerial } from "@/lib/serial";
+import { certificateFingerprint, claimSerial, type IssuedCertificate } from "@/lib/serial";
 import { buildArtworkContext } from "@/lib/settings/artwork-context";
 import { downloadCertificate, type ExportFormat } from "@/lib/render/export";
-import { certificateRepository, notifyArchiveChanged } from "@/lib/storage";
+import {
+  certificateRepository,
+  ensureArchiveRoom,
+  notifyArchiveChanged,
+  snapshotArtwork,
+} from "@/lib/storage";
 import { DEFAULT_TEMPLATE_ID, getTemplate } from "@/lib/templates/registry";
 import type { ArtworkContext } from "@/lib/templates/types";
 
@@ -37,11 +42,13 @@ export function IssueWorkspace() {
   const { settings } = useSettings();
 
   /**
-   * The tracking number for this form session. It is minted on first use rather
-   * than at mount: generating it during render would produce a different value
-   * on the server than in the browser, and hydration would tear the tree down.
+   * The certificate this form last issued. Its tracking number is minted on
+   * first use rather than at mount: generating it during render would produce a
+   * different value on the server than in the browser, and hydration would tear
+   * the tree down.
    */
-  const [serial, setSerial] = useState("");
+  const [issued, setIssued] = useState<IssuedCertificate | null>(null);
+  const serial = issued?.serial ?? "";
   const [busy, setBusy] = useState<ExportFormat | "save" | null>(null);
 
   const form = useForm<Values>({
@@ -56,13 +63,15 @@ export function IssueWorkspace() {
   // this component memoizable — `watch()` opts the whole tree out.
   const values = useWatch({ control }) as Values;
 
-  const ensureSerial = useCallback(() => {
-    if (serial) return serial;
-    const minted = generateSerial();
-    setSerial(minted);
-    return minted;
-  }, [serial]);
-
+  /** Same content keeps its serial; edited content is a new certificate. */
+  const claimTrackingNumber = useCallback(
+    (validated: Values) => {
+      const next = claimSerial(issued, certificateFingerprint(template.id, validated));
+      setIssued(next);
+      return next.serial;
+    },
+    [issued, template.id],
+  );
 
   const context: ArtworkContext = useMemo(
     () => buildArtworkContext(settings, serial),
@@ -81,7 +90,7 @@ export function IssueWorkspace() {
 
   /** Clears the identity of the current certificate without touching the form. */
   function startNewCertificate() {
-    setSerial("");
+    setIssued(null);
   }
 
   function handleTemplateChange(nextId: string) {
@@ -92,11 +101,15 @@ export function IssueWorkspace() {
   }
 
   const persist = useCallback(
-    async (validated: Values, trackingNumber: string) => {
-      // One form session is one certificate. Downloading it as PNG and then as
-      // PDF, or saving after downloading, must update the same archive row
+    async (validated: Values, trackingNumber: string, drawnWith: ArtworkContext) => {
+      // Unchanged content is one certificate. Downloading it as PNG and then
+      // as PDF, or saving after downloading, must update the same archive row
       // rather than filing the same serial twice.
       const existing = await certificateRepository.findBySerial(trackingNumber);
+      // Keep the signatures and watermark it was drawn with, so a re-issue
+      // matches it even after the settings change.
+      const { artwork, assets } = await snapshotArtwork(drawnWith, validated);
+      await certificateRepository.saveAssets(assets);
 
       await certificateRepository.save({
         id: existing?.id ?? crypto.randomUUID(),
@@ -107,20 +120,28 @@ export function IssueWorkspace() {
         summary: template.summarize(validated),
         issuedAt: existing?.issuedAt ?? new Date().toISOString(),
         source: "single",
+        artwork,
       });
       notifyArchiveChanged();
     },
     [template],
   );
 
+  /** Refuses before rendering, so a full archive never costs an unrecorded download. */
+  async function ensureRoomFor(trackingNumber: string) {
+    if (await certificateRepository.findBySerial(trackingNumber)) return;
+    await ensureArchiveRoom(1);
+  }
+
   const onExport = (format: ExportFormat) =>
     handleSubmit(
       async (validated) => {
-        const trackingNumber = ensureSerial();
+        const trackingNumber = claimTrackingNumber(validated);
         setBusy(format);
         try {
+          await ensureRoomFor(trackingNumber);
           await downloadCertificate(template, validated, context, format);
-          await persist(validated, trackingNumber);
+          await persist(validated, trackingNumber, context);
           toast.success(
             format === "pdf" ? "فایل PDF دانلود شد." : "تصویر گواهی دانلود شد.",
             { description: `شماره پیگیری: ${trackingNumber}` },
@@ -139,10 +160,10 @@ export function IssueWorkspace() {
 
   const onSaveOnly = handleSubmit(
     async (validated) => {
-      const trackingNumber = ensureSerial();
+      const trackingNumber = claimTrackingNumber(validated);
       setBusy("save");
       try {
-        await persist(validated, trackingNumber);
+        await persist(validated, trackingNumber, context);
         toast.success("گواهی در آرشیو ذخیره شد.", {
           description: `شماره پیگیری: ${trackingNumber}`,
         });
